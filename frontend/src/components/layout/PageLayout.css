@@ -1,0 +1,15 @@
+.page-layout {
+  min-height: 100vh;
+}
+
+.page-layout__main {
+  margin-top: var(--navbar-height);
+  min-height: calc(100vh - var(--navbar-height));
+  padding: var(--space-2xl) 0;
+}
+
+@media (max-width: 768px) {
+  .page-layout__main {
+    padding: var(--space-lg) 0;
+  }
+}

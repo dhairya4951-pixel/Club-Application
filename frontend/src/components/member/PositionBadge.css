@@ -1,0 +1,19 @@
+.position-badge {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: var(--radius-full);
+  color: white;
+}
+
+.position-badge--sm { padding: 2px 12px; font-size: 0.6rem; }
+.position-badge--md { padding: 4px 16px; font-size: 0.7rem; }
+.position-badge--lg { padding: 6px 20px; font-size: 0.75rem; }
+
+.position-badge--president { background: var(--badge-president); }
+.position-badge--vice_president { background: var(--badge-vice-president); }
+.position-badge--general_secretary { background: var(--badge-general-secretary); }
+.position-badge--teacher_admin { background: var(--badge-teacher-admin); }
+.position-badge--none { display: none; }
