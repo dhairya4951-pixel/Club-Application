@@ -4,18 +4,18 @@
 
 const attendanceService = require('../services/attendanceService');
 
-function getMyAttendance(req, res, next) {
+async function getMyAttendance(req, res, next) {
   try {
-    const result = attendanceService.getMemberAttendance(req.user.id);
+    const result = await attendanceService.getMemberAttendance(req.user.id);
     res.json(result.data);
   } catch (err) {
     next(err);
   }
 }
 
-function getActivityAttendance(req, res, next) {
+async function getActivityAttendance(req, res, next) {
   try {
-    const result = attendanceService.getActivityAttendance(req.params.id);
+    const result = await attendanceService.getActivityAttendance(req.params.id);
     if (result.error) {
       return res.status(result.status).json({ error: result.error });
     }
@@ -25,7 +25,7 @@ function getActivityAttendance(req, res, next) {
   }
 }
 
-function updateActivityAttendance(req, res, next) {
+async function updateActivityAttendance(req, res, next) {
   try {
     const { records } = req.body;
 
@@ -33,7 +33,7 @@ function updateActivityAttendance(req, res, next) {
       return res.status(400).json({ error: 'Records array is required' });
     }
 
-    const result = attendanceService.updateActivityAttendance(
+    const result = await attendanceService.updateActivityAttendance(
       req.params.id,
       records,
       req.user.id

@@ -2,17 +2,12 @@
  * Image Service — Storage Abstraction
  * ====================================
  * Centralizes all image upload/delete/URL operations.
- *
- * SUPABASE MIGRATION:
- *   Replace the local fs operations with:
- *     supabase.storage.from(bucket).upload(path, buffer, { contentType })
- *     supabase.storage.from(bucket).remove([path])
- *     supabase.storage.from(bucket).getPublicUrl(path)
  */
 
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const { supabase, SUPABASE_READY } = require('../config/supabase');
 
 // ─── Constants ───────────────────────────────────
 const UPLOAD_DIR = path.join(__dirname, '../../uploads');
@@ -26,10 +21,6 @@ const MIME_TO_EXT = {
 
 // ─── Validation ──────────────────────────────────
 
-/**
- * Validate an image file buffer and metadata.
- * Returns { valid: true } or { valid: false, error: '...' }
- */
 function validateImage(file) {
   if (!file) {
     return { valid: false, error: 'No file provided' };
@@ -58,14 +49,7 @@ function validateImage(file) {
 
 // ─── Upload ──────────────────────────────────────
 
-/**
- * Upload an image file.
- * @param {Object} file - Multer file object (buffer, mimetype, size)
- * @param {string} bucket - Storage bucket/folder (e.g. 'profiles', 'activities')
- * @param {string} entityId - Entity identifier (userId or activityId)
- * @returns {{ url: string, path: string }} or throws error
- */
-function upload(file, bucket, entityId) {
+async function upload(file, bucket, entityId) {
   const validation = validateImage(file);
   if (!validation.valid) {
     throw new Error(validation.error);
@@ -73,32 +57,60 @@ function upload(file, bucket, entityId) {
 
   const ext = MIME_TO_EXT[file.mimetype];
   const filename = `${uuidv4()}${ext}`;
-  const storagePath = `${bucket}/${entityId}/${filename}`;
+  const storagePath = `${entityId}/${filename}`;
+
+  if (SUPABASE_READY) {
+    // Upload to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(storagePath, file.buffer, {
+        contentType: file.mimetype,
+        upsert: true,
+      });
+
+    if (error) {
+      throw new Error(`Failed to upload to Supabase: ${error.message}`);
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(storagePath);
+
+    return { url: publicUrlData.publicUrl, path: storagePath };
+  }
+
+  // Mock Fallback
   const fullDir = path.join(UPLOAD_DIR, bucket, entityId);
   const fullPath = path.join(fullDir, filename);
-
-  // Ensure directory exists
   fs.mkdirSync(fullDir, { recursive: true });
-
-  // Write file
   fs.writeFileSync(fullPath, file.buffer);
-
-  // Return URL path (served by express.static)
-  const url = `/uploads/${storagePath}`;
-
-  return { url, path: storagePath };
+  
+  // Note the prefix for local is /uploads/bucket/...
+  const url = `/uploads/${bucket}/${storagePath}`;
+  return { url, path: `${bucket}/${storagePath}` };
 }
 
 // ─── Delete ──────────────────────────────────────
 
-/**
- * Delete an image by its storage path.
- * @param {string} storagePath - e.g. 'profiles/u-001/abc.jpg'
- */
-function deleteImage(storagePath) {
+async function deleteImage(bucket, storagePath) {
   if (!storagePath) return { success: true };
 
-  const fullPath = path.join(UPLOAD_DIR, storagePath);
+  if (SUPABASE_READY) {
+    const { error } = await supabase.storage
+      .from(bucket)
+      .remove([storagePath]);
+
+    if (error) {
+      console.error('Failed to delete image from Supabase:', error);
+      return { success: false, error: error.message };
+    }
+    return { success: true };
+  }
+
+  // Mock Fallback
+  // Ensure we don't duplicate the bucket in the path if it already has it
+  const cleanPath = storagePath.startsWith(`${bucket}/`) ? storagePath : `${bucket}/${storagePath}`;
+  const fullPath = path.join(UPLOAD_DIR, cleanPath);
 
   try {
     if (fs.existsSync(fullPath)) {
@@ -106,31 +118,45 @@ function deleteImage(storagePath) {
     }
     return { success: true };
   } catch (err) {
-    console.error('Failed to delete image:', err);
+    console.error('Failed to delete image locally:', err);
     return { success: false, error: err.message };
   }
 }
 
 // ─── Get URL ─────────────────────────────────────
 
-/**
- * Get the public URL for a storage path.
- * @param {string} storagePath
- * @returns {string|null}
- */
-function getUrl(storagePath) {
+function getUrl(bucket, storagePath) {
   if (!storagePath) return null;
-  return `/uploads/${storagePath}`;
+
+  if (SUPABASE_READY) {
+    const { data } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(storagePath);
+    return data.publicUrl;
+  }
+
+  const cleanPath = storagePath.startsWith(`${bucket}/`) ? storagePath : `${bucket}/${storagePath}`;
+  return `/uploads/${cleanPath}`;
 }
 
-/**
- * Extract storage path from a URL.
- * @param {string} url - e.g. '/uploads/profiles/u-001/abc.jpg'
- * @returns {string|null}
- */
 function pathFromUrl(url) {
-  if (!url || !url.startsWith('/uploads/')) return null;
-  return url.replace('/uploads/', '');
+  if (!url) return null;
+  if (url.startsWith('/uploads/')) {
+    // Local path format: /uploads/bucket/userId/filename
+    return url.replace('/uploads/', '');
+  }
+  
+  // Supabase URL format: https://.../storage/v1/object/public/bucketName/userId/filename
+  if (url.includes('/storage/v1/object/public/')) {
+    const parts = url.split('/storage/v1/object/public/');
+    if (parts.length === 2) {
+      // Return just the userId/filename part for Supabase
+      const fullPath = parts[1]; // e.g. "profiles/userId/filename"
+      const pathParts = fullPath.split('/');
+      return pathParts.slice(1).join('/'); // returns "userId/filename"
+    }
+  }
+  return null;
 }
 
 module.exports = {

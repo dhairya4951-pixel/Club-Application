@@ -18,18 +18,23 @@ const { createClient } = require('@supabase/supabase-js');
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error(
-    '\n❌ SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in backend/.env\n' +
-    '   Visit https://supabase.com/dashboard → your project → Settings → API\n'
+// Treat placeholder values as unconfigured
+const IS_CONFIGURED =
+  supabaseUrl &&
+  supabaseServiceKey &&
+  !supabaseUrl.includes('YOUR_PROJECT_REF') &&
+  !supabaseServiceKey.includes('YOUR_SERVICE_ROLE_KEY');
+
+if (!IS_CONFIGURED) {
+  console.warn(
+    '\n⚠️  Supabase not configured — running in mock mode.\n' +
+    '   Fill in SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in backend/.env\n'
   );
-  // Don't crash the process during initial setup — just warn.
 }
 
-const supabase = supabaseUrl && supabaseServiceKey
+const supabase = IS_CONFIGURED
   ? createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
-        // Disable auto session management — the backend doesn't need it.
         autoRefreshToken: false,
         persistSession: false,
       },

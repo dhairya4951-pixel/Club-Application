@@ -2,20 +2,55 @@
  * Attendance Service
  * ==================
  * Attendance management — admin-controlled data with audit trail.
- *
- * SUPABASE MIGRATION:
- *   Replace array operations with:
- *     supabase.from('attendance').select/upsert
  */
 
 const { attendance, users, activities } = require('../data/mockData');
 const { generateId, now } = require('../utils/helpers');
 const { sanitizeUser } = require('../models/User');
+const { supabase, SUPABASE_READY } = require('../config/supabase');
 
 /**
  * Get attendance history for a specific member (their own view)
  */
-function getMemberAttendance(memberId) {
+async function getMemberAttendance(memberId) {
+  if (SUPABASE_READY) {
+    // We join the attendance table with the activities table
+    const { data: records, error } = await supabase
+      .from('attendance')
+      .select(`
+        *,
+        activity:activities (
+          id, title, date, category, status
+        )
+      `)
+      .eq('member_id', memberId)
+      .order('updated_at', { ascending: false });
+
+    if (error) throw new Error(error.message);
+
+    // Sort by activity date descending
+    records.sort((a, b) => {
+      const dateA = a.activity?.date || '';
+      const dateB = b.activity?.date || '';
+      return new Date(dateB) - new Date(dateA);
+    });
+
+    const totalActivities = records.length;
+    const attended = records.filter(r => r.status === 'present').length;
+    const missed = records.filter(r => r.status === 'absent').length;
+    const attendancePercentage = totalActivities > 0
+      ? Math.round((attended / totalActivities) * 1000) / 10
+      : 0;
+
+    return {
+      data: {
+        stats: { totalActivities, attended, missed, attendancePercentage },
+        records,
+      },
+    };
+  }
+
+  // Mock Fallback
   const memberRecords = attendance.filter(a => a.memberId === memberId);
 
   // Enrich with activity details
@@ -56,7 +91,54 @@ function getMemberAttendance(memberId) {
 /**
  * Get attendance for a specific activity (admin view)
  */
-function getActivityAttendance(activityId) {
+async function getActivityAttendance(activityId) {
+  if (SUPABASE_READY) {
+    const { data: activity, error: actError } = await supabase
+      .from('activities')
+      .select('*')
+      .eq('id', activityId)
+      .single();
+    
+    if (actError || !activity) return { error: 'Activity not found', status: 404 };
+
+    // Fetch existing attendance records with member profile data
+    const { data: records, error: recError } = await supabase
+      .from('attendance')
+      .select(`
+        *,
+        member:profiles (
+          id, name, email, role, position, course, year, profile_image
+        )
+      `)
+      .eq('activity_id', activityId);
+
+    if (recError) throw new Error(recError.message);
+
+    // If records exist, return them
+    if (records && records.length > 0) {
+      return { data: { activity, records } };
+    }
+
+    // Otherwise, generate default empty records for all members
+    const { data: allMembers, error: membersError } = await supabase
+      .from('profiles')
+      .select('*');
+
+    if (membersError) throw new Error(membersError.message);
+
+    const defaultRecords = allMembers.map(member => ({
+      activity_id: activityId,
+      member_id: member.id,
+      status: 'absent',
+      updated_by: null,
+      updated_at: null,
+      member: member
+    }));
+
+    return { data: { activity, records: defaultRecords } };
+  }
+
+  // Mock Fallback
   const activity = activities.find(a => a.id === activityId);
   if (!activity) {
     return { error: 'Activity not found', status: 404 };
@@ -94,7 +176,34 @@ function getActivityAttendance(activityId) {
  * Bulk update attendance for an activity (admin only)
  * Expects: { records: [{ memberId, status }] }
  */
-function updateActivityAttendance(activityId, records, adminId) {
+async function updateActivityAttendance(activityId, records, adminId) {
+  if (SUPABASE_READY) {
+    const { data: activity, error: actError } = await supabase
+      .from('activities')
+      .select('*')
+      .eq('id', activityId)
+      .single();
+
+    if (actError || !activity) return { error: 'Activity not found', status: 404 };
+
+    // Format for Supabase upsert (which relies on the unique constraint activity_id + member_id)
+    const upsertData = records.map(r => ({
+      activity_id: activityId,
+      member_id: r.memberId || r.member_id,
+      status: r.status,
+      updated_by: adminId,
+    }));
+
+    const { error } = await supabase
+      .from('attendance')
+      .upsert(upsertData, { onConflict: 'activity_id,member_id' });
+
+    if (error) throw new Error(error.message);
+
+    return getActivityAttendance(activityId);
+  }
+
+  // Mock Fallback
   const activity = activities.find(a => a.id === activityId);
   if (!activity) {
     return { error: 'Activity not found', status: 404 };
@@ -102,14 +211,15 @@ function updateActivityAttendance(activityId, records, adminId) {
 
   const timestamp = now();
 
-  records.forEach(({ memberId, status }) => {
+  records.forEach((r) => {
+    const memberId = r.memberId || r.member_id;
     const existingIndex = attendance.findIndex(
       a => a.activityId === activityId && a.memberId === memberId
     );
 
     if (existingIndex >= 0) {
       // Update existing record
-      attendance[existingIndex].status = status;
+      attendance[existingIndex].status = r.status;
       attendance[existingIndex].updatedBy = adminId;
       attendance[existingIndex].updatedAt = timestamp;
     } else {
@@ -118,14 +228,13 @@ function updateActivityAttendance(activityId, records, adminId) {
         id: generateId(),
         activityId,
         memberId,
-        status,
+        status: r.status,
         updatedBy: adminId,
         updatedAt: timestamp,
       });
     }
   });
 
-  // Return updated attendance
   return getActivityAttendance(activityId);
 }
 

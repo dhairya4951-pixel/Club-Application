@@ -5,36 +5,36 @@
 const activityService = require('../services/activityService');
 const { validateCreateActivity, validateUpdateActivity } = require('../validators/activityValidator');
 
-function getAll(req, res, next) {
+async function getAll(req, res, next) {
   try {
-    const result = activityService.getAllActivities();
+    const result = await activityService.getAllActivities();
     res.json(result.data);
   } catch (err) {
     next(err);
   }
 }
 
-function getUpcoming(req, res, next) {
+async function getUpcoming(req, res, next) {
   try {
-    const result = activityService.getUpcomingActivities();
+    const result = await activityService.getUpcomingActivities();
     res.json(result.data);
   } catch (err) {
     next(err);
   }
 }
 
-function getPast(req, res, next) {
+async function getPast(req, res, next) {
   try {
-    const result = activityService.getPastActivities();
+    const result = await activityService.getPastActivities();
     res.json(result.data);
   } catch (err) {
     next(err);
   }
 }
 
-function getById(req, res, next) {
+async function getById(req, res, next) {
   try {
-    const result = activityService.getActivityById(req.params.id);
+    const result = await activityService.getActivityById(req.params.id);
     if (result.error) {
       return res.status(result.status).json({ error: result.error });
     }
@@ -44,14 +44,14 @@ function getById(req, res, next) {
   }
 }
 
-function create(req, res, next) {
+async function create(req, res, next) {
   try {
     const errors = validateCreateActivity(req.body);
     if (errors.length > 0) {
       return res.status(400).json({ error: errors.join(', ') });
     }
 
-    const result = activityService.createActivity({
+    const result = await activityService.createActivity({
       ...req.body,
       createdBy: req.user.id,
     });
@@ -62,14 +62,14 @@ function create(req, res, next) {
   }
 }
 
-function update(req, res, next) {
+async function update(req, res, next) {
   try {
     const errors = validateUpdateActivity(req.body);
     if (errors.length > 0) {
       return res.status(400).json({ error: errors.join(', ') });
     }
 
-    const result = activityService.updateActivity(req.params.id, req.body);
+    const result = await activityService.updateActivity(req.params.id, req.body);
     if (result.error) {
       return res.status(result.status).json({ error: result.error });
     }
@@ -80,9 +80,9 @@ function update(req, res, next) {
   }
 }
 
-function remove(req, res, next) {
+async function remove(req, res, next) {
   try {
-    const result = activityService.deleteActivity(req.params.id);
+    const result = await activityService.deleteActivity(req.params.id);
     if (result.error) {
       return res.status(result.status).json({ error: result.error });
     }
