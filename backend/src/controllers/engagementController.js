@@ -8,18 +8,18 @@ const engagementService = require('../services/engagementService');
 
 function getMyEngagement(req, res) {
   const summary = engagementService.getEngagementSummary(req.user.id);
-  res.json({ data: summary });
+  res.json(summary);
 }
 
 function getMemberEngagement(req, res) {
   const { memberId } = req.params;
   const summary = engagementService.getEngagementSummary(memberId);
-  res.json({ data: summary });
+  res.json(summary);
 }
 
 function getAllEngagement(req, res) {
   const data = engagementService.getAllMemberEngagement();
-  res.json({ data });
+  res.json(data);
 }
 
 function getTimeline(req, res) {
@@ -35,7 +35,7 @@ function getTimeline(req, res) {
   }
 
   const timeline = engagementService.getTimeline(memberId);
-  res.json({ data: timeline });
+  res.json(timeline);
 }
 
 module.exports = {

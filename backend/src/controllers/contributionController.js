@@ -13,7 +13,7 @@ function getTypes(req, res) {
 
 function getAll(req, res) {
   const data = contributionService.getAll();
-  res.json({ data });
+  res.json(data);
 }
 
 function getByMember(req, res) {
@@ -29,7 +29,7 @@ function getByMember(req, res) {
   }
 
   const data = contributionService.getByMember(memberId);
-  res.json({ data });
+  res.json(data);
 }
 
 function getById(req, res) {
@@ -37,7 +37,7 @@ function getById(req, res) {
   if (!contribution) {
     return res.status(404).json({ error: 'Contribution not found' });
   }
-  res.json({ data: contribution });
+  res.json(contribution);
 }
 
 function create(req, res) {
@@ -81,7 +81,7 @@ function remove(req, res) {
 
 function getAuditLog(req, res) {
   const log = contributionService.getAuditLog(req.params.id);
-  res.json({ data: log });
+  res.json(log);
 }
 
 module.exports = {
