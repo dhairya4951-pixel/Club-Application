@@ -6,17 +6,28 @@
  *   requireAuth    — Any authenticated user
  *   requireAdmin   — Teacher OR Leadership student (admin-level CRUD)
  *   requireTeacher — Teacher ONLY (position management)
+ *
+ * JWT Verification Strategy:
+ *   When Supabase is configured: verify the token via supabase.auth.getUser()
+ *   which validates the Supabase-issued JWT and returns the Auth user. We then
+ *   fetch the profiles row to get role/position data.
+ *
+ *   When Supabase is NOT yet configured (mock mode): fall back to the
+ *   existing jsonwebtoken verification against mockData users. This lets the
+ *   app run correctly during the incremental migration.
  */
 
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+const { supabase } = require('../config/supabase');
 const { users } = require('../data/mockData');
 const { hasAdminAccess, isTeacherAdmin } = require('../models/User');
 
-/**
- * Verify JWT and attach user to request
- */
-function requireAuth(req, res, next) {
+const SUPABASE_READY = !!supabase;
+
+// ─── Core JWT verifier ───────────────────────────────────────
+
+async function verifyAndAttachUser(req, res, next) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -25,6 +36,31 @@ function requireAuth(req, res, next) {
 
   const token = authHeader.split(' ')[1];
 
+  if (SUPABASE_READY) {
+    // ── Supabase path ────────────────────────────────────────
+    // getUser() validates the JWT against Supabase Auth, handles expiry, etc.
+    const { data: { user: authUser }, error } = await supabase.auth.getUser(token);
+
+    if (error || !authUser) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    // Fetch the profile row so we have role/position for authorization checks
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', authUser.id)
+      .single();
+
+    if (profileError || !profile) {
+      return res.status(401).json({ error: 'User profile not found' });
+    }
+
+    req.user = profile;
+    return next();
+  }
+
+  // ── Mock fallback path ──────────────────────────────────────
   try {
     const decoded = jwt.verify(token, config.jwtSecret);
     const user = users.find(u => u.id === decoded.userId);
@@ -33,7 +69,6 @@ function requireAuth(req, res, next) {
       return res.status(401).json({ error: 'User not found' });
     }
 
-    // Attach user info to request (without password hash)
     const { passwordHash, ...safeUser } = user;
     req.user = safeUser;
     next();
@@ -45,12 +80,21 @@ function requireAuth(req, res, next) {
   }
 }
 
+// ─── Guards ──────────────────────────────────────────────────
+
 /**
- * Require admin access (Teacher OR Leadership student)
- * Used for: member CRUD, activity CRUD, attendance, message moderation
+ * requireAuth — Any authenticated user
  */
-function requireAdmin(req, res, next) {
-  requireAuth(req, res, () => {
+async function requireAuth(req, res, next) {
+  await verifyAndAttachUser(req, res, next);
+}
+
+/**
+ * requireAdmin — Teacher OR Leadership student
+ * Used for: member CRUD, activity CRUD, attendance, contributions
+ */
+async function requireAdmin(req, res, next) {
+  await verifyAndAttachUser(req, res, async () => {
     if (!hasAdminAccess(req.user)) {
       return res.status(403).json({ error: 'Admin access required' });
     }
@@ -59,11 +103,11 @@ function requireAdmin(req, res, next) {
 }
 
 /**
- * Require Teacher/Super Admin (position management only)
+ * requireTeacher — Teacher/Super Admin only
  * Used for: assigning/removing leadership positions
  */
-function requireTeacher(req, res, next) {
-  requireAuth(req, res, () => {
+async function requireTeacher(req, res, next) {
+  await verifyAndAttachUser(req, res, async () => {
     if (!isTeacherAdmin(req.user)) {
       return res.status(403).json({ error: 'Only the Teacher/Super Admin can perform this action' });
     }
@@ -72,9 +116,9 @@ function requireTeacher(req, res, next) {
 }
 
 /**
- * Alias for requireAuth (any authenticated member)
+ * requireMember — Alias for requireAuth
  */
-function requireMember(req, res, next) {
+async function requireMember(req, res, next) {
   return requireAuth(req, res, next);
 }
 
