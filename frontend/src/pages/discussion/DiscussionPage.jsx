@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { supabase } from '../../lib/supabase';
 import { messageService } from '../../services/messageService';
 import ChatMessage from '../../components/chat/ChatMessage';
 import ChatInput from '../../components/chat/ChatInput';
@@ -18,6 +19,18 @@ export default function DiscussionPage() {
 
   useEffect(() => {
     fetchMessages();
+
+    // Subscribe to realtime updates
+    const channel = supabase
+      .channel('public:messages')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
+        fetchMessages();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {

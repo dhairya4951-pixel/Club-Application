@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 import { messageService } from '../../services/messageService';
 import ChatMessage from '../../components/chat/ChatMessage';
 import Loading from '../../components/common/Loading';
@@ -11,7 +12,21 @@ export default function ManageDiscussion() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => { fetchMessages(); }, []);
+  useEffect(() => { 
+    fetchMessages(); 
+    
+    // Subscribe to realtime updates for admin view
+    const channel = supabase
+      .channel('admin:messages')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
+        fetchMessages();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   async function fetchMessages() {
     try {
