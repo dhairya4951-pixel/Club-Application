@@ -4,6 +4,7 @@ import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import FormField from '../../components/common/FormField';
+import ImageUpload from '../../components/common/ImageUpload';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Loading from '../../components/common/Loading';
 import { formatDate, getStatusColor } from '../../utils/helpers';
@@ -101,6 +102,11 @@ export default function ManageActivities() {
     finally { setDeleting(false); }
   };
 
+  // Image upload callback — sets the coverImage field to the returned URL
+  const handleCoverImageChange = (url) => {
+    setForm(p => ({ ...p, coverImage: url || '' }));
+  };
+
   if (loading) return <Loading fullPage message="Loading activities..." />;
 
   const statusLabels = { upcoming: 'Upcoming', completed: 'Completed', cancelled: 'Cancelled' };
@@ -127,8 +133,15 @@ export default function ManageActivities() {
             {activities.map(a => (
               <tr key={a.id}>
                 <td>
-                  <span className="manage-member-name">{a.title}</span>
-                  <span className="manage-member-email">{a.location}</span>
+                  <div className="activity-cell">
+                    {a.coverImage && (
+                      <img src={a.coverImage} alt="" className="activity-cell__thumb" />
+                    )}
+                    <div>
+                      <span className="manage-member-name">{a.title}</span>
+                      <span className="manage-member-email">{a.location}</span>
+                    </div>
+                  </div>
                 </td>
                 <td className="nowrap">{formatDate(a.date)}</td>
                 <td><Badge variant={getStatusColor(a.status)} size="sm">{statusLabels[a.status]}</Badge></td>
@@ -149,6 +162,9 @@ export default function ManageActivities() {
       <div className="manage-mobile-list">
         {activities.map(a => (
           <div key={a.id} className="manage-mobile-card">
+            {a.coverImage && (
+              <img src={a.coverImage} alt="" className="activity-mobile-thumb" />
+            )}
             <span className="manage-member-name">{a.title}</span>
             <span className="manage-member-email">{formatDate(a.date)} · {a.location}</span>
             <div style={{ marginTop: 'var(--space-sm)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -176,7 +192,21 @@ export default function ManageActivities() {
           <FormField label="Status" name="status" type="select" value={form.status} onChange={handleChange} options={STATUS_OPTIONS} />
           <FormField label="Category" name="category" type="select" value={form.category} onChange={handleChange} options={CATEGORY_OPTIONS} />
         </div>
-        <FormField label="Cover Image URL" name="coverImage" value={form.coverImage} onChange={handleChange} placeholder="https://..." />
+
+        {/* Cover Image — Upload from device OR URL */}
+        <div className="form-field">
+          <label className="form-label">Cover Image</label>
+          <ImageUpload
+            currentImage={form.coverImage || null}
+            onImageChange={handleCoverImageChange}
+            uploadType="activity"
+            activityId={editingId}
+            showUrlOption={true}
+            shape="rectangle"
+            placeholder="🖼️"
+          />
+        </div>
+
         <div className="profile-edit-actions">
           <Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button>
           <Button variant="primary" onClick={handleSave} loading={saving}>{editingId ? 'Save Changes' : 'Create Activity'}</Button>

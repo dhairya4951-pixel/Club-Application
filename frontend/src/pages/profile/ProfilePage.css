@@ -36,6 +36,53 @@
   object-fit: cover;
 }
 
+/* Profile photo section — wraps ImageUpload */
+.profile-photo-section {
+  flex-shrink: 0;
+}
+
+.profile-photo-section .image-upload--circle {
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.profile-photo-section .image-upload__preview--circle {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+}
+
+.profile-photo-section .image-upload__placeholder {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: white;
+}
+
+.profile-photo-section .image-upload__controls {
+  align-items: center;
+}
+
+/* Read-only position field in edit mode */
+.profile-readonly-field {
+  margin-top: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.profile-readonly-value {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.profile-readonly-hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
 .profile-card__identity h2 {
   font-size: var(--font-size-2xl);
   font-weight: 700;

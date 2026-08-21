@@ -19,6 +19,8 @@ const activityRoutes = require('./src/routes/activityRoutes');
 const attendanceRoutes = require('./src/routes/attendanceRoutes');
 const messageRoutes = require('./src/routes/messageRoutes');
 const profileRoutes = require('./src/routes/profileRoutes');
+const uploadRoutes = require('./src/routes/uploadRoutes');
+const path = require('path');
 
 const app = express();
 
@@ -28,6 +30,7 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ─── API Routes ──────────────────────────────────────────
 app.use('/api/auth', authRoutes);
@@ -36,6 +39,7 @@ app.use('/api/activities', activityRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Activity-scoped attendance routes (admin only)
 app.get('/api/activities/:id/attendance', requireAdmin, attendanceController.getActivityAttendance);

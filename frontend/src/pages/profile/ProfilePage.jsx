@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { profileService } from '../../services/profileService';
 import { getInitials, getPositionLabel } from '../../utils/helpers';
 import PositionBadge from '../../components/member/PositionBadge';
+import ImageUpload from '../../components/common/ImageUpload';
 import Button from '../../components/common/Button';
 import FormField from '../../components/common/FormField';
 import Modal from '../../components/common/Modal';
@@ -73,6 +74,23 @@ export default function ProfilePage() {
     }
   };
 
+  // Profile photo change — auto-persisted via imageService
+  const handleProfileImageChange = async (newUrl) => {
+    try {
+      // If newUrl is null, the ImageUpload component already called removeProfileImage
+      // If newUrl is a URL, the ImageUpload component already uploaded and got the URL
+      // We just need to update the local user state
+      const updated = await profileService.update({ profileImage: newUrl });
+      updateUser(updated);
+      setMessage(newUrl ? 'Profile photo updated!' : 'Profile photo removed.');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err) {
+      // If the upload already saved, the image is still there —
+      // just refresh user data to sync
+      console.error('Failed to sync profile image:', err);
+    }
+  };
+
   if (!user) return null;
 
   return (
@@ -87,12 +105,15 @@ export default function ProfilePage() {
 
       <div className="profile-card animate-fade-in">
         <div className="profile-card__header">
-          <div className="profile-card__avatar">
-            {user.profileImage ? (
-              <img src={user.profileImage} alt={user.name} />
-            ) : (
-              <span>{getInitials(user.name)}</span>
-            )}
+          {/* Profile Photo Upload */}
+          <div className="profile-photo-section">
+            <ImageUpload
+              currentImage={user.profileImage}
+              onImageChange={handleProfileImageChange}
+              uploadType="profile"
+              shape="circle"
+              placeholder={getInitials(user.name)}
+            />
           </div>
           <div className="profile-card__identity">
             <h2>{user.name}</h2>
@@ -108,6 +129,16 @@ export default function ProfilePage() {
               <FormField label="Course" name="course" value={form.course} onChange={handleChange} placeholder="e.g. B.A. Political Science" />
               <FormField label="Year" name="year" value={form.year} onChange={handleChange} placeholder="e.g. 3rd Year" />
               <FormField label="Bio" name="bio" type="textarea" value={form.bio} onChange={handleChange} placeholder="Tell us about yourself..." rows={3} />
+
+              {/* Show position as read-only */}
+              <div className="profile-readonly-field">
+                <span className="form-label">Position</span>
+                <span className="profile-readonly-value">
+                  <PositionBadge position={user.position} role={user.role} size="sm" />
+                  <span className="profile-readonly-hint">(Cannot be changed here)</span>
+                </span>
+              </div>
+
               <div className="profile-edit-actions">
                 <Button variant="secondary" onClick={() => setEditing(false)}>Cancel</Button>
                 <Button variant="primary" onClick={handleSave} loading={saving}>Save Changes</Button>

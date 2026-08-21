@@ -26,3 +26,6 @@ npm-debug.log*
 
 # Coverage
 coverage/
+
+# Uploaded files (served by backend, not committed)
+uploads/

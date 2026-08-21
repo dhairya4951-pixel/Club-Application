@@ -1,3 +1,27 @@
 .nowrap { white-space: nowrap; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
 @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } }
+
+/* Activity cover image thumbnails in table */
+.activity-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.activity-cell__thumb {
+  width: 48px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+}
+
+.activity-mobile-thumb {
+  width: 100%;
+  height: 120px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  margin-bottom: var(--space-sm);
+}
