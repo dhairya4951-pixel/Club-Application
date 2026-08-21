@@ -1,0 +1,23 @@
+.contribution-points-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, hsla(145, 80%, 40%, 0.12), hsla(145, 80%, 40%, 0.05));
+  border: 1px solid hsla(145, 80%, 40%, 0.25);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-md);
+}
+
+.contribution-points-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.contribution-points-value {
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+  color: hsl(145, 80%, 45%);
+  letter-spacing: -0.5px;
+}

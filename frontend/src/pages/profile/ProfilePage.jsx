@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { profileService } from '../../services/profileService';
+import { engagementService } from '../../services/engagementService';
 import { getInitials, getPositionLabel } from '../../utils/helpers';
 import PositionBadge from '../../components/member/PositionBadge';
 import ImageUpload from '../../components/common/ImageUpload';
@@ -18,6 +19,15 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [engagement, setEngagement] = useState(null);
+
+  useEffect(() => {
+    if (user?.id) {
+      engagementService.getMyEngagement()
+        .then(data => setEngagement(data))
+        .catch(err => console.error('Failed to load engagement summary:', err));
+    }
+  }, [user?.id]);
 
   useEffect(() => {
     if (user) {
@@ -176,6 +186,37 @@ export default function ProfilePage() {
                   <span className="profile-detail-value">{user.bio}</span>
                 </div>
               )}
+              
+              {engagement && (
+                <>
+                  <div style={{ marginTop: 'var(--space-xl)', marginBottom: 'var(--space-md)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-lg)' }}>
+                    <h3 style={{ fontSize: 'var(--font-size-md)', margin: 0 }}>Engagement Summary</h3>
+                  </div>
+                  <div className="profile-detail-row">
+                    <span className="profile-detail-label">Activity Level</span>
+                    <span className="profile-detail-value">
+                      <span className={`status-badge status-badge--${engagement.activityLevel === 'Excellent' || engagement.activityLevel === 'Good' ? 'success' : 'warning'}`}>
+                        {engagement.activityLevel}
+                      </span>
+                      <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', marginLeft: 'var(--space-sm)' }}>
+                        {engagement.attendance.percentage}% attendance
+                      </span>
+                    </span>
+                  </div>
+                  <div className="profile-detail-row">
+                    <span className="profile-detail-label">Contribution</span>
+                    <span className="profile-detail-value">
+                      <span className={`status-badge status-badge--${engagement.contributionLevel === 'High' || engagement.contributionLevel === 'Moderate' ? 'success' : 'warning'}`}>
+                        {engagement.contributionLevel}
+                      </span>
+                      <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', marginLeft: 'var(--space-sm)' }}>
+                        {engagement.contribution.totalPoints} points
+                      </span>
+                    </span>
+                  </div>
+                </>
+              )}
+
               <div className="profile-actions">
                 <Button variant="primary" onClick={() => setEditing(true)}>Edit Profile</Button>
                 <Button variant="secondary" onClick={() => setPasswordModal(true)}>Change Password</Button>

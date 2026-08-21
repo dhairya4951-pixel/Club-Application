@@ -523,9 +523,269 @@ const messages = [
   },
 ];
 
+// ─── Contribution Type Definitions ───────────────────────
+// Fixed point values — admins select a type, system assigns points
+
+const CONTRIBUTION_TYPES = {
+  // Tasks
+  SMALL_TASK:        { category: 'TASK', label: 'Small Task', points: 2 },
+  STANDARD_TASK:     { category: 'TASK', label: 'Standard Task', points: 5 },
+  MAJOR_TASK:        { category: 'TASK', label: 'Major Task', points: 7 },
+
+  // Resources
+  STANDARD_RESOURCE: { category: 'RESOURCE', label: 'Standard Resource', points: 3 },
+  MAJOR_RESOURCE:    { category: 'RESOURCE', label: 'Major Resource / Research', points: 5 },
+
+  // Event Support
+  EVENT_SUPPORT:     { category: 'EVENT_SUPPORT', label: 'Event Support', points: 5 },
+
+  // Event Organization
+  EVENT_ORGANIZED:   { category: 'EVENT_ORGANIZED', label: 'Event Organizer', points: 10 },
+  LEAD_ORGANIZER:    { category: 'EVENT_ORGANIZED', label: 'Lead Organizer', points: 12 },
+
+  // Major Responsibility
+  CLUB_INITIATIVE:   { category: 'MAJOR_RESPONSIBILITY', label: 'Club Initiative', points: 10 },
+  MAJOR_INITIATIVE:  { category: 'MAJOR_RESPONSIBILITY', label: 'Major Initiative', points: 15 },
+};
+
+const CONTRIBUTION_CATEGORIES = {
+  TASK:                 { label: 'Task', icon: '📋' },
+  RESOURCE:             { label: 'Resource', icon: '📚' },
+  EVENT_SUPPORT:        { label: 'Event Support', icon: '🤝' },
+  EVENT_ORGANIZED:      { label: 'Event Organized', icon: '🎯' },
+  MAJOR_RESPONSIBILITY: { label: 'Major Responsibility / Initiative', icon: '⭐' },
+};
+
+// ─── Contributions (seed data) ───────────────────────────
+
+const contributions = [
+  // Dhairya (u-001) — President: contributions earned through actual work
+  {
+    id: 'c-001',
+    memberId: 'u-001',
+    category: 'EVENT_ORGANIZED',
+    contributionType: 'LEAD_ORGANIZER',
+    title: 'Organized Inter-College Debate Championship',
+    description: 'Planned and coordinated the entire debate event — venue booking, team registrations, judging panel, logistics.',
+    points: 12,
+    date: '2026-08-08',
+    recordedBy: 'u-004',
+    recordedAt: '2026-08-09T10:00:00.000Z',
+    updatedBy: null,
+    updatedAt: null,
+    attachmentUrl: null,
+    externalLink: null,
+  },
+  {
+    id: 'c-002',
+    memberId: 'u-001',
+    category: 'TASK',
+    contributionType: 'STANDARD_TASK',
+    title: 'Created debate registration form',
+    description: 'Built an online Google Form for inter-college debate team signups with automated confirmation.',
+    points: 5,
+    date: '2026-08-05',
+    recordedBy: 'u-004',
+    recordedAt: '2026-08-05T14:00:00.000Z',
+    updatedBy: null,
+    updatedAt: null,
+    attachmentUrl: null,
+    externalLink: 'https://forms.google.com/example',
+  },
+
+  // Rahul (u-002) — VP
+  {
+    id: 'c-003',
+    memberId: 'u-002',
+    category: 'TASK',
+    contributionType: 'STANDARD_TASK',
+    title: 'Designed event poster for Budget Workshop',
+    description: 'Created promotional poster using Canva, distributed on social media channels.',
+    points: 5,
+    date: '2026-07-20',
+    recordedBy: 'u-001',
+    recordedAt: '2026-07-21T09:00:00.000Z',
+    updatedBy: null,
+    updatedAt: null,
+    attachmentUrl: null,
+    externalLink: null,
+  },
+  {
+    id: 'c-004',
+    memberId: 'u-002',
+    category: 'EVENT_SUPPORT',
+    contributionType: 'EVENT_SUPPORT',
+    title: 'Managed venue setup for Club Meeting',
+    description: 'Coordinated with admin block staff, arranged seating and AV equipment.',
+    points: 5,
+    date: '2026-07-05',
+    recordedBy: 'u-004',
+    recordedAt: '2026-07-06T10:00:00.000Z',
+    updatedBy: null,
+    updatedAt: null,
+    attachmentUrl: null,
+    externalLink: null,
+  },
+
+  // Ananya (u-003) — General Secretary
+  {
+    id: 'c-005',
+    memberId: 'u-003',
+    category: 'TASK',
+    contributionType: 'MAJOR_TASK',
+    title: 'Prepared semester activity calendar',
+    description: 'Compiled and scheduled all planned activities for monsoon semester, coordinated with faculty advisors.',
+    points: 7,
+    date: '2026-07-01',
+    recordedBy: 'u-004',
+    recordedAt: '2026-07-02T11:00:00.000Z',
+    updatedBy: null,
+    updatedAt: null,
+    attachmentUrl: null,
+    externalLink: null,
+  },
+  {
+    id: 'c-006',
+    memberId: 'u-003',
+    category: 'RESOURCE',
+    contributionType: 'STANDARD_RESOURCE',
+    title: 'Meeting minutes template',
+    description: 'Created a standardized template for recording club meeting minutes.',
+    points: 3,
+    date: '2026-07-06',
+    recordedBy: 'u-001',
+    recordedAt: '2026-07-07T09:00:00.000Z',
+    updatedBy: null,
+    updatedAt: null,
+    attachmentUrl: null,
+    externalLink: null,
+  },
+
+  // Karan (u-005) — Normal member with contributions
+  {
+    id: 'c-007',
+    memberId: 'u-005',
+    category: 'RESOURCE',
+    contributionType: 'MAJOR_RESOURCE',
+    title: 'Indian Budget 2026-27 Analysis Pack',
+    description: 'Compiled a 15-page analysis of key budget allocations for social sectors, used in Budget Analysis Workshop.',
+    points: 5,
+    date: '2026-07-22',
+    recordedBy: 'u-001',
+    recordedAt: '2026-07-23T10:00:00.000Z',
+    updatedBy: null,
+    updatedAt: null,
+    attachmentUrl: null,
+    externalLink: null,
+  },
+  {
+    id: 'c-008',
+    memberId: 'u-005',
+    category: 'TASK',
+    contributionType: 'SMALL_TASK',
+    title: 'Collected participant feedback',
+    description: 'Distributed and collected feedback forms after the Budget Analysis Workshop.',
+    points: 2,
+    date: '2026-07-26',
+    recordedBy: 'u-003',
+    recordedAt: '2026-07-27T09:00:00.000Z',
+    updatedBy: null,
+    updatedAt: null,
+    attachmentUrl: null,
+    externalLink: null,
+  },
+
+  // Sneha (u-008) — Active contributor
+  {
+    id: 'c-009',
+    memberId: 'u-008',
+    category: 'EVENT_ORGANIZED',
+    contributionType: 'EVENT_ORGANIZED',
+    title: 'Co-organized Debate Workshop for Beginners',
+    description: 'Designed the workshop curriculum, led practice debate rounds, and provided feedback to participants.',
+    points: 10,
+    date: '2026-06-20',
+    recordedBy: 'u-004',
+    recordedAt: '2026-06-21T10:00:00.000Z',
+    updatedBy: null,
+    updatedAt: null,
+    attachmentUrl: null,
+    externalLink: null,
+  },
+  {
+    id: 'c-010',
+    memberId: 'u-008',
+    category: 'RESOURCE',
+    contributionType: 'STANDARD_RESOURCE',
+    title: 'Debate technique reference guide',
+    description: 'Compiled a 5-page guide on British Parliamentary debate techniques with examples.',
+    points: 3,
+    date: '2026-06-25',
+    recordedBy: 'u-001',
+    recordedAt: '2026-06-26T09:00:00.000Z',
+    updatedBy: null,
+    updatedAt: null,
+    attachmentUrl: null,
+    externalLink: null,
+  },
+
+  // Ishita (u-012) — Journalism student contributions
+  {
+    id: 'c-011',
+    memberId: 'u-012',
+    category: 'TASK',
+    contributionType: 'STANDARD_TASK',
+    title: 'Event photography for Budget Workshop',
+    description: 'Covered the workshop with photography, provided edited photos for club social media.',
+    points: 5,
+    date: '2026-07-25',
+    recordedBy: 'u-002',
+    recordedAt: '2026-07-26T10:00:00.000Z',
+    updatedBy: null,
+    updatedAt: null,
+    attachmentUrl: null,
+    externalLink: null,
+  },
+
+  // Aditya (u-013) — Tech contributions
+  {
+    id: 'c-012',
+    memberId: 'u-013',
+    category: 'MAJOR_RESPONSIBILITY',
+    contributionType: 'CLUB_INITIATIVE',
+    title: 'Built club website prototype',
+    description: 'Developed a functional prototype for the club management platform with member directory and activity tracking.',
+    points: 10,
+    date: '2026-08-01',
+    recordedBy: 'u-004',
+    recordedAt: '2026-08-02T10:00:00.000Z',
+    updatedBy: null,
+    updatedAt: null,
+    attachmentUrl: null,
+    externalLink: null,
+  },
+];
+
+// ─── Audit Log ───────────────────────────────────────────
+// Tracks creation, edits, and deletions of contributions
+
+const auditLog = contributions.map((c, i) => ({
+  id: `audit-${String(i + 1).padStart(3, '0')}`,
+  action: 'CREATE',
+  entityType: 'contribution',
+  entityId: c.id,
+  performedBy: c.recordedBy,
+  performedAt: c.recordedAt,
+  details: { title: c.title, points: c.points, contributionType: c.contributionType },
+}));
+
 module.exports = {
   users,
   activities,
   attendance,
   messages,
+  contributions,
+  auditLog,
+  CONTRIBUTION_TYPES,
+  CONTRIBUTION_CATEGORIES,
 };

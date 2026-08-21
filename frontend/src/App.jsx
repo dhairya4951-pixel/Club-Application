@@ -17,6 +17,9 @@ import ManageActivities from './pages/admin/ManageActivities';
 import ManageAttendance from './pages/admin/ManageAttendance';
 import ActivityAttendancePage from './pages/admin/ActivityAttendancePage';
 import ManageDiscussion from './pages/admin/ManageDiscussion';
+import ManageEngagement from './pages/admin/ManageEngagement';
+import MyEngagementPage from './pages/engagement/MyEngagementPage';
+import MemberEngagementPage from './pages/engagement/MemberEngagementPage';
 import './App.css';
 
 function AppRoutes() {
@@ -51,6 +54,12 @@ function AppRoutes() {
       <Route path="/profile" element={
         <ProtectedRoute><PageLayout><ProfilePage /></PageLayout></ProtectedRoute>
       } />
+      <Route path="/my-engagement" element={
+        <ProtectedRoute><PageLayout><MyEngagementPage /></PageLayout></ProtectedRoute>
+      } />
+      <Route path="/engagement/:memberId" element={
+        <ProtectedRoute><PageLayout><MemberEngagementPage /></PageLayout></ProtectedRoute>
+      } />
 
       {/* Admin Routes */}
       <Route path="/admin" element={
@@ -70,6 +79,9 @@ function AppRoutes() {
       } />
       <Route path="/admin/discussion" element={
         <AdminRoute><PageLayout><ManageDiscussion /></PageLayout></AdminRoute>
+      } />
+      <Route path="/admin/engagement" element={
+        <AdminRoute><PageLayout><ManageEngagement /></PageLayout></AdminRoute>
       } />
 
       {/* Catch all */}

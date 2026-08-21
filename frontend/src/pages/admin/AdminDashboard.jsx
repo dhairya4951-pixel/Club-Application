@@ -58,6 +58,7 @@ export default function AdminDashboard() {
           <QuickAction icon="➕" label="Create Member" to="/admin/members" />
           <QuickAction icon="📝" label="Create Activity" to="/admin/activities" />
           <QuickAction icon="✅" label="Manage Attendance" to="/admin/attendance" />
+          <QuickAction icon="⭐" label="Manage Engagement" to="/admin/engagement" />
           <QuickAction icon="👥" label="View Members" to="/members" />
         </div>
       </section>

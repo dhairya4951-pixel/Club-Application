@@ -21,6 +21,7 @@ export default function Navbar() {
     { to: '/members', label: 'Members', icon: '👥' },
     { to: '/discussion', label: 'Discussion', icon: '💬' },
     { to: '/my-activities', label: 'My Activities', icon: '📊' },
+    { to: '/my-engagement', label: 'My Engagement', icon: '⭐' },
   ];
 
   const adminLinks = [
@@ -28,6 +29,7 @@ export default function Navbar() {
     { to: '/admin/members', label: 'Manage Members', icon: '👤' },
     { to: '/admin/activities', label: 'Manage Activities', icon: '📝' },
     { to: '/admin/attendance', label: 'Manage Attendance', icon: '✅' },
+    { to: '/admin/engagement', label: 'Engagement', icon: '⭐' },
     { to: '/admin/discussion', label: 'Manage Discussion', icon: '🛡️' },
   ];
 

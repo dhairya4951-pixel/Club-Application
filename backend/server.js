@@ -20,6 +20,8 @@ const attendanceRoutes = require('./src/routes/attendanceRoutes');
 const messageRoutes = require('./src/routes/messageRoutes');
 const profileRoutes = require('./src/routes/profileRoutes');
 const uploadRoutes = require('./src/routes/uploadRoutes');
+const contributionRoutes = require('./src/routes/contributionRoutes');
+const engagementRoutes = require('./src/routes/engagementRoutes');
 const path = require('path');
 
 const app = express();
@@ -40,6 +42,8 @@ app.use('/api/attendance', attendanceRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/contributions', contributionRoutes);
+app.use('/api/engagement', engagementRoutes);
 
 // Activity-scoped attendance routes (admin only)
 app.get('/api/activities/:id/attendance', requireAdmin, attendanceController.getActivityAttendance);
