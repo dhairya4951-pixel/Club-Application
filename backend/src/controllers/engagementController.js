@@ -6,23 +6,35 @@
 
 const engagementService = require('../services/engagementService');
 
-function getMyEngagement(req, res) {
-  const summary = engagementService.getEngagementSummary(req.user.id);
-  res.json(summary);
+async function getMyEngagement(req, res) {
+  try {
+    const summary = await engagementService.getEngagementSummary(req.user.id);
+    res.json(summary);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 }
 
-function getMemberEngagement(req, res) {
+async function getMemberEngagement(req, res) {
   const { memberId } = req.params;
-  const summary = engagementService.getEngagementSummary(memberId);
-  res.json(summary);
+  try {
+    const summary = await engagementService.getEngagementSummary(memberId);
+    res.json(summary);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 }
 
-function getAllEngagement(req, res) {
-  const data = engagementService.getAllMemberEngagement();
-  res.json(data);
+async function getAllEngagement(req, res) {
+  try {
+    const data = await engagementService.getAllMemberEngagement();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 }
 
-function getTimeline(req, res) {
+async function getTimeline(req, res) {
   const { memberId } = req.params;
 
   // Members can see their own; admins can see anyone
@@ -34,8 +46,12 @@ function getTimeline(req, res) {
     return res.status(403).json({ error: 'Access denied' });
   }
 
-  const timeline = engagementService.getTimeline(memberId);
-  res.json(timeline);
+  try {
+    const timeline = await engagementService.getTimeline(memberId);
+    res.json(timeline);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 }
 
 module.exports = {

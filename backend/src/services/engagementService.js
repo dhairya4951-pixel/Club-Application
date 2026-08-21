@@ -6,16 +6,12 @@
  *   - Discussion stats (from messages, with spam filtering)
  *   - Contribution stats (from contributionService)
  *   - Combined engagement summary
- *
- * All calculations are derived — no stored totals.
- *
- * SUPABASE MIGRATION:
- *   Replace array filtering with SQL aggregation queries
  */
 
-const { attendance, activities, messages, users } = require('../data/mockData');
+const { attendance: mockAttendance, activities: mockActivities, messages: mockMessages, users: mockUsers } = require('../data/mockData');
 const { sanitizeUser } = require('../models/User');
 const contributionService = require('./contributionService');
+const { supabase, SUPABASE_READY } = require('../config/supabase');
 
 // ─── Spam Filter ─────────────────────────────────────────
 const SPAM_PATTERNS = /^(ok|yes|no|lol|lmao|haha|hahaha|ha|😂|👍|💯|nice|cool|true|ya|yep|yea|yeah|nah|nope|sure|thanks|thx|ty|k|hmm|mm|oh|ah|okay|np|gg|bruh|bro|ikr|fr|same|wow|omg|ooh|eh|meh|hi|hey|hello|bye)$/i;
@@ -31,10 +27,45 @@ function isMeaningfulMessage(messageText) {
   return true;
 }
 
+// ─── Data Fetcher ────────────────────────────────────────
+
+async function fetchEngagementData(memberId = null) {
+  if (!SUPABASE_READY) {
+    return {
+      activities: mockActivities,
+      attendance: mockAttendance,
+      messages: mockMessages,
+      users: mockUsers
+    };
+  }
+
+  // Fetch all activities
+  const { data: dbActivities } = await supabase.from('activities').select('id, title, status, date');
+  
+  // Fetch attendance
+  let attQuery = supabase.from('attendance').select('activity_id, member_id, status, updated_at');
+  if (memberId) attQuery = attQuery.eq('member_id', memberId);
+  const { data: dbAttendance } = await attQuery;
+
+  // Fetch messages
+  let msgQuery = supabase.from('messages').select('sender_id, message, created_at');
+  if (memberId) msgQuery = msgQuery.eq('sender_id', memberId);
+  const { data: dbMessages } = await msgQuery;
+
+  // Fetch users
+  const { data: dbUsers } = await supabase.from('profiles').select('id, name, email, role, position, profile_image');
+
+  return {
+    activities: dbActivities ? dbActivities.map(a => ({ id: a.id, title: a.title, status: a.status, date: a.date })) : [],
+    attendance: dbAttendance ? dbAttendance.map(a => ({ activityId: a.activity_id, memberId: a.member_id, status: a.status, updatedAt: a.updated_at })) : [],
+    messages: dbMessages ? dbMessages.map(m => ({ senderId: m.sender_id, message: m.message, createdAt: m.created_at })) : [],
+    users: dbUsers ? dbUsers.map(u => ({ id: u.id, name: u.name, email: u.email, role: u.role, position: u.position, profileImage: u.profile_image })) : []
+  };
+}
+
 // ─── Attendance Stats ────────────────────────────────────
 
-function getAttendanceStats(memberId) {
-  // Only count completed (non-cancelled) activities
+function computeAttendanceStats(memberId, activities, attendance) {
   const completedActivities = activities.filter(a => a.status === 'completed');
   const completedIds = new Set(completedActivities.map(a => a.id));
 
@@ -47,50 +78,39 @@ function getAttendanceStats(memberId) {
   const missed = memberRecords.filter(r => r.status === 'absent').length;
   const percentage = total > 0 ? Math.round((attended / total) * 1000) / 10 : 0;
 
-  // Activity band
   let band;
   if (percentage >= 90) band = 'Excellent';
   else if (percentage >= 75) band = 'Good';
   else if (percentage >= 60) band = 'Moderate';
   else band = 'Low';
 
-  return {
-    total,
-    attended,
-    missed,
-    percentage,
-    band,
-  };
+  return { total, attended, missed, percentage, band };
 }
 
 // ─── Discussion Stats ────────────────────────────────────
 
-function getDiscussionStats(memberId) {
+function computeDiscussionStats(memberId, messages) {
   const memberMessages = messages.filter(m => m.senderId === memberId);
 
   const totalMessages = memberMessages.length;
   const meaningfulMessages = memberMessages.filter(m => isMeaningfulMessage(m.message)).length;
 
-  // Calculate active discussion days
   const activeDays = new Set(
     memberMessages.map(m => new Date(m.createdAt).toISOString().split('T')[0])
   ).size;
 
-  return {
-    totalMessages,
-    meaningfulMessages,
-    activeDays,
-  };
+  return { totalMessages, meaningfulMessages, activeDays };
 }
 
 // ─── Engagement Summary ──────────────────────────────────
 
-function getEngagementSummary(memberId) {
-  const attendanceStats = getAttendanceStats(memberId);
-  const discussionStats = getDiscussionStats(memberId);
-  const contributionStats = contributionService.getStats(memberId);
+async function getEngagementSummary(memberId) {
+  const data = await fetchEngagementData(memberId);
+  
+  const attendanceStats = computeAttendanceStats(memberId, data.activities, data.attendance);
+  const discussionStats = computeDiscussionStats(memberId, data.messages);
+  const contributionStats = await contributionService.getStats(memberId);
 
-  // Overall engagement label
   const activityLevel = attendanceStats.band;
   const contributionLevel = contributionStats.level;
 
@@ -117,18 +137,43 @@ function getEngagementSummary(memberId) {
 
 // ─── All Members Overview ────────────────────────────────
 
-function getAllMemberEngagement() {
-  // Exclude teacher from engagement ranking (they're the advisor)
-  const members = users.filter(u => u.role !== 'teacher_admin');
+async function getAllMemberEngagement() {
+  const data = await fetchEngagementData(null);
+  const members = data.users.filter(u => u.role !== 'teacher_admin');
 
-  return members.map(member => {
-    const summary = getEngagementSummary(member.id);
+  // We need to fetch contributions for all members. 
+  // It's easier to loop using Promise.all
+  const results = await Promise.all(members.map(async (member) => {
+    const attendanceStats = computeAttendanceStats(member.id, data.activities, data.attendance);
+    const discussionStats = computeDiscussionStats(member.id, data.messages);
+    const contributionStats = await contributionService.getStats(member.id);
+
+    const activityLevel = attendanceStats.band;
+    const contributionLevel = contributionStats.level;
+
+    let overallLabel;
+    if (['Excellent', 'Good'].includes(activityLevel) && ['High', 'Moderate'].includes(contributionLevel)) {
+      overallLabel = 'Highly Engaged';
+    } else if (['Excellent', 'Good'].includes(activityLevel)) {
+      overallLabel = 'Active';
+    } else if (activityLevel === 'Moderate') {
+      overallLabel = 'Moderately Active';
+    } else {
+      overallLabel = 'Low Participation';
+    }
+
     return {
       member: sanitizeUser(member),
-      ...summary,
+      attendance: attendanceStats,
+      discussion: discussionStats,
+      contribution: contributionStats,
+      activityLevel,
+      contributionLevel,
+      overallLabel
     };
-  }).sort((a, b) => {
-    // Sort by contribution points desc, then attendance desc
+  }));
+
+  return results.sort((a, b) => {
     if (b.contribution.totalPoints !== a.contribution.totalPoints) {
       return b.contribution.totalPoints - a.contribution.totalPoints;
     }
@@ -137,17 +182,17 @@ function getAllMemberEngagement() {
 }
 
 // ─── Timeline ────────────────────────────────────────────
-// Merges attendance records and contributions into a single chronological feed
 
-function getTimeline(memberId) {
-  const completedActivities = activities.filter(a => a.status === 'completed');
+async function getTimeline(memberId) {
+  const data = await fetchEngagementData(memberId);
+  
+  const completedActivities = data.activities.filter(a => a.status === 'completed');
   const completedIds = new Set(completedActivities.map(a => a.id));
 
-  // Attendance events
-  const attendanceEvents = attendance
+  const attendanceEvents = data.attendance
     .filter(a => a.memberId === memberId && completedIds.has(a.activityId))
     .map(record => {
-      const activity = activities.find(a => a.id === record.activityId);
+      const activity = data.activities.find(a => a.id === record.activityId);
       return {
         type: 'attendance',
         date: activity?.date || record.updatedAt,
@@ -158,8 +203,8 @@ function getTimeline(memberId) {
       };
     });
 
-  // Contribution events
-  const contributionEvents = contributionService.getByMember(memberId).map(c => ({
+  const memberContributions = await contributionService.getByMember(memberId);
+  const contributionEvents = memberContributions.map(c => ({
     type: 'contribution',
     date: c.date,
     icon: c.categoryIcon,
@@ -171,14 +216,11 @@ function getTimeline(memberId) {
     recorder: c.recorder,
   }));
 
-  // Merge and sort by date descending
   return [...attendanceEvents, ...contributionEvents]
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 }
 
 module.exports = {
-  getAttendanceStats,
-  getDiscussionStats,
   getEngagementSummary,
   getAllMemberEngagement,
   getTimeline,

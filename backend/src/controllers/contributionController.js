@@ -11,12 +11,12 @@ function getTypes(req, res) {
   res.json(contributionService.getTypes());
 }
 
-function getAll(req, res) {
-  const data = contributionService.getAll();
+async function getAll(req, res) {
+  const data = await contributionService.getAll();
   res.json(data);
 }
 
-function getByMember(req, res) {
+async function getByMember(req, res) {
   const { memberId } = req.params;
 
   // Members can see their own; admins can see anyone
@@ -28,26 +28,26 @@ function getByMember(req, res) {
     return res.status(403).json({ error: 'Access denied' });
   }
 
-  const data = contributionService.getByMember(memberId);
+  const data = await contributionService.getByMember(memberId);
   res.json(data);
 }
 
-function getById(req, res) {
-  const contribution = contributionService.getById(req.params.id);
+async function getById(req, res) {
+  const contribution = await contributionService.getById(req.params.id);
   if (!contribution) {
     return res.status(404).json({ error: 'Contribution not found' });
   }
   res.json(contribution);
 }
 
-function create(req, res) {
+async function create(req, res) {
   const { memberId, contributionType, title, description, date, attachmentUrl, externalLink } = req.body;
 
   if (!memberId || !contributionType || !title || !description || !date) {
     return res.status(400).json({ error: 'Missing required fields: memberId, contributionType, title, description, date' });
   }
 
-  const result = contributionService.create(
+  const result = await contributionService.create(
     { memberId, contributionType, title, description, date, attachmentUrl, externalLink },
     req.user.id
   );
@@ -59,8 +59,8 @@ function create(req, res) {
   res.status(201).json(result);
 }
 
-function update(req, res) {
-  const result = contributionService.update(req.params.id, req.body, req.user.id);
+async function update(req, res) {
+  const result = await contributionService.update(req.params.id, req.body, req.user.id);
 
   if (result.error) {
     return res.status(result.status || 400).json({ error: result.error });
@@ -69,8 +69,8 @@ function update(req, res) {
   res.json(result);
 }
 
-function remove(req, res) {
-  const result = contributionService.remove(req.params.id, req.user.id);
+async function remove(req, res) {
+  const result = await contributionService.remove(req.params.id, req.user.id);
 
   if (result.error) {
     return res.status(result.status || 400).json({ error: result.error });
@@ -79,8 +79,8 @@ function remove(req, res) {
   res.json({ message: 'Contribution deleted', data: result.data });
 }
 
-function getAuditLog(req, res) {
-  const log = contributionService.getAuditLog(req.params.id);
+async function getAuditLog(req, res) {
+  const log = await contributionService.getAuditLog(req.params.id);
   res.json(log);
 }
 
