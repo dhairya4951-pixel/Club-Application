@@ -364,53 +364,45 @@ async function deleteMember(id, requestingUser) {
 // ─── Position Management (Teacher-only) ──────────────────────
 
 async function assignPosition(memberId, position, requestingUser) {
+  // Enforce at the service layer first (fast-fail before hitting DB)
   if (!isTeacherAdmin(requestingUser)) {
     return { error: 'Only the Teacher/Super Admin can assign positions', status: 403 };
   }
 
   if (SUPABASE_READY) {
-    const { data: member, error: fetchError } = await supabase
-      .from('profiles')
-      .select('id, name, role, position')
-      .eq('id', memberId)
-      .single();
+    // ── Use the atomic DB stored procedure ──────────────────────────────────
+    // assign_leadership_position() runs inside a single PostgreSQL transaction:
+    //   1. Validates requester is teacher_admin (DB-level guard)
+    //   2. Strips position from the current holder (if any)
+    //   3. Sets position on the new holder
+    //   4. Writes an audit log entry
+    // Because steps 2+3 are in the same transaction, the unique partial index
+    // is never violated and there is no race condition.
+    const { data: rpcResult, error: rpcError } = await supabase.rpc(
+      'assign_leadership_position',
+      {
+        p_member_id:    memberId,
+        p_position:     position,
+        p_requester_id: requestingUser.id,
+      }
+    );
 
-    if (fetchError || !member) return { error: 'Member not found', status: 404 };
-    if (member.role === ROLES.TEACHER_ADMIN) {
-      return { error: 'Cannot assign student positions to the Teacher account', status: 400 };
+    if (rpcError) {
+      // Map PostgreSQL EXCEPTION messages to friendly HTTP errors
+      const msg = rpcError.message || '';
+      if (msg.includes('PERMISSION_DENIED'))   return { error: 'Only the Teacher/Super Admin can assign positions', status: 403 };
+      if (msg.includes('NOT_FOUND'))           return { error: 'Member not found', status: 404 };
+      if (msg.includes('INVALID_OPERATION'))   return { error: 'Cannot assign student positions to the Teacher/Super Admin account', status: 400 };
+      return { error: rpcError.message, status: 500 };
     }
 
-    if (position === POSITIONS.NONE) return removePosition(memberId, requestingUser);
-
-    if (!LEADERSHIP_POSITIONS.includes(position)) {
-      return { error: `Invalid position. Must be one of: ${LEADERSHIP_POSITIONS.join(', ')}`, status: 400 };
-    }
-
-    // The unique partial index in the DB enforces one-holder-per-position.
-    // We first strip the position from any current holder.
-    const { data: currentHolder } = await supabase
-      .from('profiles')
-      .select('id, name')
-      .eq('position', position)
-      .neq('id', memberId)
-      .single();
-
-    if (currentHolder) {
-      await supabase.from('profiles').update({ position: 'none' }).eq('id', currentHolder.id);
-    }
-
-    const { data: updated, error: updateError } = await supabase
-      .from('profiles')
-      .update({ position })
-      .eq('id', memberId)
-      .select()
-      .single();
-
-    if (updateError) return { error: updateError.message, status: 500 };
-    return { data: updated, previousHolder: currentHolder || null };
+    return {
+      data:            rpcResult.new_holder,
+      previousHolder:  rpcResult.previous_holder || null,
+    };
   }
 
-  // ── Mock fallback ───────────────────────────────────────────
+  // ── Mock fallback (no Supabase connected) ──────────────────────────────────
   const member = users.find(u => u.id === memberId);
   if (!member) return { error: 'Member not found', status: 404 };
   if (member.role === ROLES.TEACHER_ADMIN) {
@@ -450,15 +442,17 @@ async function removePosition(memberId, requestingUser) {
     }
 
     const previousPosition = member.position;
-    const { data: updated, error: updateError } = await supabase
-      .from('profiles')
-      .update({ position: 'none' })
-      .eq('id', memberId)
-      .select()
-      .single();
+    const { data: rpcResult, error: rpcError } = await supabase.rpc(
+      'assign_leadership_position',
+      {
+        p_member_id:    memberId,
+        p_position:     'none',
+        p_requester_id: requestingUser.id,
+      }
+    );
 
-    if (updateError) return { error: updateError.message, status: 500 };
-    return { data: updated, previousPosition };
+    if (rpcError) return { error: rpcError.message, status: 500 };
+    return { data: rpcResult.new_holder, previousPosition };
   }
 
   // ── Mock fallback ───────────────────────────────────────────

@@ -5,30 +5,30 @@
 const memberService = require('../services/memberService');
 const { validateCreateMember, validateUpdateMember, validatePositionAssignment } = require('../validators/memberValidator');
 
-function getAll(req, res, next) {
+async function getAll(req, res, next) {
   try {
     const { search, role } = req.query;
 
     if (search) {
-      const result = memberService.searchMembers(search);
+      const result = await memberService.searchMembers(search);
       return res.json(result.data);
     }
 
     if (role) {
-      const result = memberService.filterByRole(role);
+      const result = await memberService.filterByRole(role);
       return res.json(result.data);
     }
 
-    const result = memberService.getAllMembers();
+    const result = await memberService.getAllMembers();
     res.json(result.data);
   } catch (err) {
     next(err);
   }
 }
 
-function getById(req, res, next) {
+async function getById(req, res, next) {
   try {
-    const result = memberService.getMemberById(req.params.id);
+    const result = await memberService.getMemberById(req.params.id);
     if (result.error) {
       return res.status(result.status).json({ error: result.error });
     }
@@ -38,14 +38,14 @@ function getById(req, res, next) {
   }
 }
 
-function create(req, res, next) {
+async function create(req, res, next) {
   try {
     const errors = validateCreateMember(req.body);
     if (errors.length > 0) {
       return res.status(400).json({ error: errors.join(', ') });
     }
 
-    const result = memberService.createMember(req.body, req.user);
+    const result = await memberService.createMember(req.body, req.user);
     if (result.error) {
       return res.status(result.status).json({ error: result.error });
     }
@@ -56,14 +56,14 @@ function create(req, res, next) {
   }
 }
 
-function update(req, res, next) {
+async function update(req, res, next) {
   try {
     const errors = validateUpdateMember(req.body);
     if (errors.length > 0) {
       return res.status(400).json({ error: errors.join(', ') });
     }
 
-    const result = memberService.updateMember(req.params.id, req.body, req.user);
+    const result = await memberService.updateMember(req.params.id, req.body, req.user);
     if (result.error) {
       return res.status(result.status).json({ error: result.error });
     }
@@ -74,9 +74,9 @@ function update(req, res, next) {
   }
 }
 
-function remove(req, res, next) {
+async function remove(req, res, next) {
   try {
-    const result = memberService.deleteMember(req.params.id, req.user);
+    const result = await memberService.deleteMember(req.params.id, req.user);
     if (result.error) {
       return res.status(result.status).json({ error: result.error });
     }
@@ -89,14 +89,14 @@ function remove(req, res, next) {
 
 // ─── Position Management (Teacher-only) ──────────────────
 
-function assignPosition(req, res, next) {
+async function assignPosition(req, res, next) {
   try {
     const errors = validatePositionAssignment(req.body);
     if (errors.length > 0) {
       return res.status(400).json({ error: errors.join(', ') });
     }
 
-    const result = memberService.assignPosition(req.params.id, req.body.position, req.user);
+    const result = await memberService.assignPosition(req.params.id, req.body.position, req.user);
     if (result.error) {
       return res.status(result.status).json({ error: result.error });
     }
@@ -111,9 +111,9 @@ function assignPosition(req, res, next) {
   }
 }
 
-function removePosition(req, res, next) {
+async function removePosition(req, res, next) {
   try {
-    const result = memberService.removePosition(req.params.id, req.user);
+    const result = await memberService.removePosition(req.params.id, req.user);
     if (result.error) {
       return res.status(result.status).json({ error: result.error });
     }
@@ -128,9 +128,9 @@ function removePosition(req, res, next) {
   }
 }
 
-function getLeadershipStatus(req, res, next) {
+async function getLeadershipStatus(req, res, next) {
   try {
-    const result = memberService.getLeadershipStatus();
+    const result = await memberService.getLeadershipStatus();
     res.json(result.data);
   } catch (err) {
     next(err);
