@@ -38,7 +38,7 @@ export default function MembersPage() {
     <div className="container">
       <div className="page-header">
         <h1>Club Members</h1>
-        <p>Meet the team behind The Policy Circle</p>
+        <p>Meet the team behind the Public Policy Club</p>
       </div>
 
       {/* Leadership */}

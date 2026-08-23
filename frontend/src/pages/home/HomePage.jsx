@@ -44,7 +44,7 @@ export default function HomePage() {
         <div className="container hero__content">
           <div className="hero__text animate-slide-up">
             <span className="hero__badge">College Club Platform</span>
-            <h1 className="hero__title">The Policy Circle</h1>
+            <h1 className="hero__title">Public Policy Club</h1>
             <p className="hero__desc">
               Fostering civic awareness, critical thinking, and leadership through
               engaging discussions, workshops, and community initiatives.

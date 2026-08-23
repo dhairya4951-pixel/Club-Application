@@ -36,6 +36,13 @@
   margin-bottom: var(--space-sm);
 }
 
+.login-logo-img {
+  height: 64px;
+  width: auto;
+  margin-bottom: var(--space-sm);
+  display: inline-block;
+}
+
 .login-title {
   font-size: var(--font-size-3xl);
   font-weight: 800;

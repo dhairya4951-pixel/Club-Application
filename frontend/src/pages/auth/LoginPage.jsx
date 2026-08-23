@@ -36,8 +36,8 @@ export default function LoginPage() {
       <div className="login-bg" />
       <div className="login-container animate-fade-in">
         <div className="login-header">
-          <span className="login-logo">◆</span>
-          <h1 className="login-title">The Policy Circle</h1>
+          <img src="/logo.png" alt="Logo" className="login-logo-img" />
+          <h1 className="login-title">Public Policy Club</h1>
           <p className="login-subtitle">Club Management Platform</p>
         </div>
 

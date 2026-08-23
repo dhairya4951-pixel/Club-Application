@@ -40,8 +40,8 @@ export default function Navbar() {
       <nav className="navbar">
         <div className="navbar__inner">
           <NavLink to="/" className="navbar__brand">
-            <span className="navbar__logo">◆</span>
-            <span className="navbar__title">The Policy Circle</span>
+            <img src="/logo.png" alt="Logo" className="navbar__logo-img" />
+            <span className="navbar__title">Public Policy Club</span>
           </NavLink>
 
           <div className="navbar__links hide-mobile">
@@ -112,8 +112,8 @@ export default function Navbar() {
         <div className="mobile-overlay" onClick={() => setMobileOpen(false)}>
           <div className="mobile-menu animate-slide-in" onClick={e => e.stopPropagation()}>
             <div className="mobile-menu__header">
-              <span className="navbar__logo">◆</span>
-              <span className="navbar__title">The Policy Circle</span>
+              <img src="/logo.png" alt="Logo" className="navbar__logo-img" />
+              <span className="navbar__title">Public Policy Club</span>
               <button className="mobile-menu__close" onClick={() => setMobileOpen(false)}>✕</button>
             </div>
 
