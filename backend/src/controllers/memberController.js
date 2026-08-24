@@ -4,6 +4,7 @@
 
 const memberService = require('../services/memberService');
 const { validateCreateMember, validateUpdateMember, validatePositionAssignment } = require('../validators/memberValidator');
+const { camelizeKeys } = require('../utils/responseHelpers');
 
 async function getAll(req, res, next) {
   try {
@@ -11,16 +12,16 @@ async function getAll(req, res, next) {
 
     if (search) {
       const result = await memberService.searchMembers(search);
-      return res.json(result.data);
+      return res.json(camelizeKeys(result.data));
     }
 
     if (role) {
       const result = await memberService.filterByRole(role);
-      return res.json(result.data);
+      return res.json(camelizeKeys(result.data));
     }
 
     const result = await memberService.getAllMembers();
-    res.json(result.data);
+    res.json(camelizeKeys(result.data));
   } catch (err) {
     next(err);
   }
@@ -32,7 +33,7 @@ async function getById(req, res, next) {
     if (result.error) {
       return res.status(result.status).json({ error: result.error });
     }
-    res.json(result.data);
+    res.json(camelizeKeys(result.data));
   } catch (err) {
     next(err);
   }
@@ -50,7 +51,7 @@ async function create(req, res, next) {
       return res.status(result.status).json({ error: result.error });
     }
 
-    res.status(201).json(result.data);
+    res.status(201).json(camelizeKeys(result.data));
   } catch (err) {
     next(err);
   }
@@ -68,7 +69,7 @@ async function update(req, res, next) {
       return res.status(result.status).json({ error: result.error });
     }
 
-    res.json(result.data);
+    res.json(camelizeKeys(result.data));
   } catch (err) {
     next(err);
   }
@@ -103,8 +104,8 @@ async function assignPosition(req, res, next) {
 
     res.json({
       message: 'Position assigned successfully',
-      data: result.data,
-      previousHolder: result.previousHolder || null,
+      data: camelizeKeys(result.data),
+      previousHolder: result.previousHolder ? camelizeKeys(result.previousHolder) : null,
     });
   } catch (err) {
     next(err);
@@ -120,7 +121,7 @@ async function removePosition(req, res, next) {
 
     res.json({
       message: 'Position removed successfully',
-      data: result.data,
+      data: camelizeKeys(result.data),
       previousPosition: result.previousPosition,
     });
   } catch (err) {
@@ -131,7 +132,7 @@ async function removePosition(req, res, next) {
 async function getLeadershipStatus(req, res, next) {
   try {
     const result = await memberService.getLeadershipStatus();
-    res.json(result.data);
+    res.json(camelizeKeys(result.data));
   } catch (err) {
     next(err);
   }

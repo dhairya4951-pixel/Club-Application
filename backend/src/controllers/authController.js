@@ -4,6 +4,7 @@
 
 const authService = require('../services/authService');
 const { validateLogin } = require('../validators/authValidator');
+const { camelizeKeys } = require('../utils/responseHelpers');
 
 async function login(req, res, next) {
   try {
@@ -19,7 +20,7 @@ async function login(req, res, next) {
       return res.status(result.status).json({ error: result.error });
     }
 
-    res.json(result.data);
+    res.json(camelizeKeys(result.data));
   } catch (err) {
     next(err);
   }
@@ -32,7 +33,7 @@ function logout(req, res) {
 
 function getMe(req, res) {
   // req.user is set by requireAuth middleware
-  res.json(req.user);
+  res.json(camelizeKeys(req.user));
 }
 
 module.exports = { login, logout, getMe };

@@ -9,11 +9,12 @@ const bcrypt = require('bcryptjs');
 const { users } = require('../data/mockData');
 const { sanitizeUser } = require('../models/User');
 const { now } = require('../utils/helpers');
+const { camelizeKeys } = require('../utils/responseHelpers');
 
 const SUPABASE_READY = !!supabase;
 
 function getProfile(req, res) {
-  res.json(req.user);
+  res.json(camelizeKeys(req.user));
 }
 
 async function updateProfile(req, res, next) {
@@ -47,9 +48,7 @@ async function updateProfile(req, res, next) {
 
       if (error) return res.status(500).json({ error: error.message });
 
-      // Normalize profile_image → profileImage for frontend compatibility
-      const normalized = normalizeProfile(data);
-      return res.json(normalized);
+      return res.json(camelizeKeys(data));
     }
 
     // Mock fallback
@@ -108,18 +107,6 @@ async function changePassword(req, res, next) {
   } catch (err) {
     next(err);
   }
-}
-
-/**
- * Normalize a profiles DB row to the camelCase shape the frontend expects.
- * The profiles table uses snake_case (profile_image) but the frontend reads profileImage.
- */
-function normalizeProfile(profile) {
-  if (!profile) return null;
-  return {
-    ...profile,
-    profileImage: profile.profile_image,
-  };
 }
 
 module.exports = { getProfile, updateProfile, changePassword };

@@ -9,6 +9,7 @@ const { users } = require('../data/mockData');
 const { sanitizeUser } = require('../models/User');
 const { now } = require('../utils/helpers');
 const { supabase, SUPABASE_READY } = require('../config/supabase');
+const { camelizeKeys } = require('../utils/responseHelpers');
 
 /**
  * POST /api/upload/profile-image
@@ -68,7 +69,7 @@ async function uploadProfileImage(req, res, next) {
     res.json({
       message: 'Profile image uploaded successfully',
       url: result.url,
-      user,
+      user: camelizeKeys(user),
     });
   } catch (err) {
     if (err.message && err.message.includes('upload')) {
@@ -128,7 +129,7 @@ async function removeProfileImage(req, res, next) {
 
     res.json({
       message: 'Profile image removed',
-      user,
+      user: camelizeKeys(user),
     });
   } catch (err) {
     next(err);

@@ -4,11 +4,12 @@
 
 const activityService = require('../services/activityService');
 const { validateCreateActivity, validateUpdateActivity } = require('../validators/activityValidator');
+const { camelizeKeys } = require('../utils/responseHelpers');
 
 async function getAll(req, res, next) {
   try {
     const result = await activityService.getAllActivities();
-    res.json(result.data);
+    res.json(camelizeKeys(result.data));
   } catch (err) {
     next(err);
   }
@@ -17,7 +18,7 @@ async function getAll(req, res, next) {
 async function getUpcoming(req, res, next) {
   try {
     const result = await activityService.getUpcomingActivities();
-    res.json(result.data);
+    res.json(camelizeKeys(result.data));
   } catch (err) {
     next(err);
   }
@@ -26,7 +27,7 @@ async function getUpcoming(req, res, next) {
 async function getPast(req, res, next) {
   try {
     const result = await activityService.getPastActivities();
-    res.json(result.data);
+    res.json(camelizeKeys(result.data));
   } catch (err) {
     next(err);
   }
@@ -38,7 +39,7 @@ async function getById(req, res, next) {
     if (result.error) {
       return res.status(result.status).json({ error: result.error });
     }
-    res.json(result.data);
+    res.json(camelizeKeys(result.data));
   } catch (err) {
     next(err);
   }
@@ -56,7 +57,7 @@ async function create(req, res, next) {
       createdBy: req.user.id,
     });
 
-    res.status(201).json(result.data);
+    res.status(201).json(camelizeKeys(result.data));
   } catch (err) {
     next(err);
   }
@@ -74,7 +75,7 @@ async function update(req, res, next) {
       return res.status(result.status).json({ error: result.error });
     }
 
-    res.json(result.data);
+    res.json(camelizeKeys(result.data));
   } catch (err) {
     next(err);
   }
