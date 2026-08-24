@@ -41,4 +41,6 @@ const supabase = IS_CONFIGURED
     })
   : null;
 
-module.exports = { supabase };
+const SUPABASE_READY = !!supabase;
+
+module.exports = { supabase, SUPABASE_READY };
