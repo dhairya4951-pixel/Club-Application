@@ -14,14 +14,18 @@ export default function ActivityAttendancePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     async function fetch() {
       try {
         const result = await attendanceService.getActivityAttendance(activityId);
         setData(result);
-        setRecords(result.records.map(r => ({ memberId: r.memberId, status: r.status })));
-      } catch (err) { console.error(err); }
+        setRecords(result.records.map(r => ({ memberId: r.memberId || r.member_id, status: r.status })));
+      } catch (err) {
+        console.error(err);
+        setError(err.message || 'Failed to load attendance data.');
+      }
       finally { setLoading(false); }
     }
     fetch();
@@ -46,6 +50,17 @@ export default function ActivityAttendancePage() {
   };
 
   if (loading) return <Loading fullPage message="Loading attendance..." />;
+  if (error) {
+    return (
+      <div className="container">
+        <button className="back-link" onClick={() => navigate('/admin/attendance')}>← Back to Attendance</button>
+        <div className="profile-error" style={{ marginTop: 'var(--space-lg)', padding: 'var(--space-xl)', textAlign: 'center', borderRadius: 'var(--radius-lg)' }}>
+          <h2 style={{ marginBottom: 'var(--space-sm)' }}>⚠️ Attendance Unavailable</h2>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
   if (!data) return <div className="container"><p>Activity not found</p></div>;
 
   return (
@@ -66,9 +81,10 @@ export default function ActivityAttendancePage() {
           </thead>
           <tbody>
             {data.records.map((record, i) => {
-              const currentStatus = records.find(r => r.memberId === record.memberId)?.status || record.status;
+              const rowMemberId = record.memberId || record.member_id;
+              const currentStatus = records.find(r => r.memberId === rowMemberId)?.status || record.status;
               return (
-                <tr key={record.memberId || i}>
+                <tr key={rowMemberId || i}>
                   <td>
                     <div className="manage-member-cell">
                       <div className="manage-member-avatar">{getInitials(record.member?.name)}</div>
@@ -83,7 +99,7 @@ export default function ActivityAttendancePage() {
                   <td>
                     <button
                       className={`att-toggle ${currentStatus === 'present' ? 'att-toggle--present' : 'att-toggle--absent'}`}
-                      onClick={() => toggleStatus(record.memberId)}
+                      onClick={() => toggleStatus(rowMemberId)}
                     >
                       {currentStatus === 'present' ? 'Mark Absent' : 'Mark Present'}
                     </button>
@@ -98,16 +114,17 @@ export default function ActivityAttendancePage() {
       {/* Mobile version */}
       <div className="manage-mobile-list">
         {data.records.map((record, i) => {
-          const currentStatus = records.find(r => r.memberId === record.memberId)?.status || record.status;
+          const rowMemberId = record.memberId || record.member_id;
+          const currentStatus = records.find(r => r.memberId === rowMemberId)?.status || record.status;
           return (
-            <div key={record.memberId || i} className="manage-mobile-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div key={rowMemberId || i} className="manage-mobile-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div className="manage-member-cell">
                 <div className="manage-member-avatar">{getInitials(record.member?.name)}</div>
                 <span className="manage-member-name">{record.member?.name}</span>
               </div>
               <button
                 className={`att-toggle ${currentStatus === 'present' ? 'att-toggle--present' : 'att-toggle--absent'}`}
-                onClick={() => toggleStatus(record.memberId)}
+                onClick={() => toggleStatus(rowMemberId)}
               >
                 {currentStatus === 'present' ? '✓ Present' : '✗ Absent'}
               </button>

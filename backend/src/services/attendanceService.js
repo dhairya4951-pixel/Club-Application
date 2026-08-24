@@ -19,11 +19,12 @@ async function getMemberAttendance(memberId) {
       .from('attendance')
       .select(`
         *,
-        activity:activities (
+        activity:activities!inner (
           id, title, date, category, status
         )
       `)
       .eq('member_id', memberId)
+      .eq('activity.status', 'completed')
       .order('updated_at', { ascending: false });
 
     if (error) throw new Error(error.message);
@@ -66,7 +67,7 @@ async function getMemberAttendance(memberId) {
         status: activity.status,
       } : null,
     };
-  }).sort((a, b) => {
+  }).filter(r => r.activity && r.activity.status === 'completed').sort((a, b) => {
     const dateA = a.activity?.date || '';
     const dateB = b.activity?.date || '';
     return new Date(dateB) - new Date(dateA);
@@ -100,13 +101,14 @@ async function getActivityAttendance(activityId) {
       .single();
     
     if (actError || !activity) return { error: 'Activity not found', status: 404 };
+    if (activity.status !== 'completed') return { error: 'Attendance can only be managed for completed activities.', status: 400 };
 
     // Fetch existing attendance records with member profile data
     const { data: records, error: recError } = await supabase
       .from('attendance')
       .select(`
         *,
-        member:profiles (
+        member:profiles!member_id (
           id, name, email, role, position, course, year, profile_image
         )
       `)
@@ -142,6 +144,9 @@ async function getActivityAttendance(activityId) {
   const activity = activities.find(a => a.id === activityId);
   if (!activity) {
     return { error: 'Activity not found', status: 404 };
+  }
+  if (activity.status !== 'completed') {
+    return { error: 'Attendance can only be managed for completed activities.', status: 400 };
   }
 
   const records = attendance.filter(a => a.activityId === activityId);
@@ -185,6 +190,7 @@ async function updateActivityAttendance(activityId, records, adminId) {
       .single();
 
     if (actError || !activity) return { error: 'Activity not found', status: 404 };
+    if (activity.status !== 'completed') return { error: 'Attendance can only be managed for completed activities.', status: 400 };
 
     // Format for Supabase upsert (which relies on the unique constraint activity_id + member_id)
     const upsertData = records.map(r => ({
@@ -207,6 +213,9 @@ async function updateActivityAttendance(activityId, records, adminId) {
   const activity = activities.find(a => a.id === activityId);
   if (!activity) {
     return { error: 'Activity not found', status: 404 };
+  }
+  if (activity.status !== 'completed') {
+    return { error: 'Attendance can only be managed for completed activities.', status: 400 };
   }
 
   const timestamp = now();

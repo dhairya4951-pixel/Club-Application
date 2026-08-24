@@ -20,7 +20,9 @@ export default function DiscussionPage() {
   useEffect(() => {
     fetchMessages();
 
-    // Subscribe to realtime updates
+    // Subscribe to realtime updates (only if supabase client is available)
+    if (!supabase) return;
+
     const channel = supabase
       .channel('public:messages')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {

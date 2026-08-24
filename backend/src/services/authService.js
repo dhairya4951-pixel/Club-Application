@@ -34,7 +34,15 @@ async function login(email, password) {
   }
 
   // 1. Sign in with Supabase Auth (email + password)
-  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+  // We MUST create a local client instance for this.
+  // Using the global `supabase` client here would permanently mutate
+  // its session to the logged-in user, breaking the service_role bypass for all subsequent requests!
+  const { createClient } = require('@supabase/supabase-js');
+  const authClient = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { autoRefreshToken: false, persistSession: false }
+  });
+
+  const { data: authData, error: authError } = await authClient.auth.signInWithPassword({
     email,
     password,
   });
@@ -54,11 +62,14 @@ async function login(email, password) {
     return { error: 'User profile not found. Contact an administrator.', status: 404 };
   }
 
-  // 3. Return the Supabase session token + profile data.
+  // 3. Return the Supabase session tokens + profile data.
   //    The frontend stores the access_token and sends it as Bearer on all requests.
+  //    The refresh_token is needed so the frontend Supabase client can persist
+  //    the session in localStorage and auto-restore it after page refresh.
   return {
     data: {
       token: authData.session.access_token,
+      refreshToken: authData.session.refresh_token,
       user: profile,
     },
   };

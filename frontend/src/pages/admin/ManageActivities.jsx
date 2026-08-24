@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { activityService } from '../../services/activityService';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
@@ -34,6 +35,7 @@ const emptyForm = {
 };
 
 export default function ManageActivities() {
+  const navigate = useNavigate();
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -43,6 +45,7 @@ export default function ManageActivities() {
   const [error, setError] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [completing, setCompleting] = useState(null);
 
   useEffect(() => { fetchActivities(); }, []);
 
@@ -102,6 +105,15 @@ export default function ManageActivities() {
     finally { setDeleting(false); }
   };
 
+  const handleMarkCompleted = async (activity) => {
+    setCompleting(activity.id);
+    try {
+      await activityService.update(activity.id, { status: 'completed' });
+      await fetchActivities();
+    } catch (err) { console.error(err); }
+    finally { setCompleting(null); }
+  };
+
   // Image upload callback — sets the coverImage field to the returned URL
   const handleCoverImageChange = (url) => {
     setForm(p => ({ ...p, coverImage: url || '' }));
@@ -150,6 +162,12 @@ export default function ManageActivities() {
                   <div className="manage-actions">
                     <Button variant="ghost" size="sm" onClick={() => openEdit(a)}>Edit</Button>
                     <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(a)} className="text-danger">Delete</Button>
+                    {a.status === 'upcoming' && (
+                      <Button variant="accent" size="sm" onClick={() => handleMarkCompleted(a)} loading={completing === a.id}>✓ Mark Completed</Button>
+                    )}
+                    {a.status === 'completed' && (
+                      <Button variant="primary" size="sm" onClick={() => navigate(`/admin/attendance/${a.id}`)}>📋 Attendance</Button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -174,6 +192,12 @@ export default function ManageActivities() {
                 <Button variant="danger" size="sm" onClick={() => setDeleteTarget(a)}>Delete</Button>
               </div>
             </div>
+            {a.status === 'upcoming' && (
+              <Button variant="accent" size="sm" style={{ marginTop: 'var(--space-sm)', width: '100%' }} onClick={() => handleMarkCompleted(a)} loading={completing === a.id}>✓ Mark as Completed</Button>
+            )}
+            {a.status === 'completed' && (
+              <Button variant="primary" size="sm" style={{ marginTop: 'var(--space-sm)', width: '100%' }} onClick={() => navigate(`/admin/attendance/${a.id}`)}>📋 Manage Attendance</Button>
+            )}
           </div>
         ))}
       </div>

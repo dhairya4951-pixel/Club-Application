@@ -125,12 +125,22 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (email, password) => {
     // Always POST to our backend — it handles Supabase or mock internally
     const response = await authService.login(email, password);
-    const { token: newToken, user: userData } = response;
+    const { token: newToken, refreshToken, user: userData } = response;
 
     setToken(newToken);
     setUser(userData);
     sessionStorage.setItem('club_token', newToken);
     setTokenGetter(() => newToken);
+
+    // Tell the frontend Supabase client about this session so it persists
+    // the tokens in localStorage. This is what enables session restore on
+    // page refresh via supabase.auth.getSession().
+    if (SUPABASE_READY && refreshToken) {
+      await supabase.auth.setSession({
+        access_token: newToken,
+        refresh_token: refreshToken,
+      });
+    }
 
     return userData;
   }, []);
