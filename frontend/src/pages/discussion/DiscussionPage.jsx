@@ -5,12 +5,15 @@ import ChatMessage from '../../components/chat/ChatMessage';
 import ChatInput from '../../components/chat/ChatInput';
 import Loading from '../../components/common/Loading';
 import EmptyState from '../../components/common/EmptyState';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
 import './DiscussionPage.css';
 
 export default function DiscussionPage() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -62,6 +65,35 @@ export default function DiscussionPage() {
     }
   }
 
+  async function handleEdit(id, newText) {
+    try {
+      const updated = await messageService.update(id, newText);
+      setMessages(prev =>
+        prev.map(m => (m.id === id ? { ...m, message: updated.message, updatedAt: updated.updatedAt } : m))
+      );
+    } catch (err) {
+      console.error('Failed to edit message:', err);
+    }
+  }
+
+  function handleDeleteRequest(id) {
+    setDeleteTarget(id);
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await messageService.delete(deleteTarget);
+      setMessages(prev => prev.filter(m => m.id !== deleteTarget));
+      setDeleteTarget(null);
+    } catch (err) {
+      console.error('Failed to delete message:', err);
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   if (loading) return <Loading fullPage message="Loading discussion..." />;
 
   return (
@@ -82,7 +114,12 @@ export default function DiscussionPage() {
           ) : (
             <>
               {messages.map(msg => (
-                <ChatMessage key={msg.id} message={msg} />
+                <ChatMessage
+                  key={msg.id}
+                  message={msg}
+                  onEdit={handleEdit}
+                  onDelete={handleDeleteRequest}
+                />
               ))}
               <div ref={messagesEndRef} />
             </>
@@ -91,6 +128,16 @@ export default function DiscussionPage() {
 
         <ChatInput onSend={handleSend} disabled={sending} />
       </div>
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Message"
+        message="Are you sure you want to delete this message? This action cannot be undone."
+        confirmText="Delete"
+        loading={deleting}
+      />
     </div>
   );
 }
