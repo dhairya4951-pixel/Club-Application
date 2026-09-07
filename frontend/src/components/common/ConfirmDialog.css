@@ -1,11 +1,18 @@
+/* ─── Confirm Dialog Styling ──────────────────────── */
+.confirm-dialog {
+  display: flex;
+  flex-direction: column;
+}
+
 .confirm-dialog__message {
   color: var(--color-text-secondary);
-  margin-bottom: var(--space-xl);
+  font-size: var(--font-size-base);
   line-height: 1.6;
+  margin-bottom: var(--space-xl);
 }
 
 .confirm-dialog__actions {
   display: flex;
   justify-content: flex-end;
-  gap: var(--space-md);
+  gap: var(--space-sm);
 }

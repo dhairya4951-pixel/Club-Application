@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { engagementService } from '../../services/engagementService';
-import StatCard from '../../components/dashboard/StatCard';
 import Badge from '../../components/common/Badge';
 import Loading from '../../components/common/Loading';
 import EmptyState from '../../components/common/EmptyState';
+import Icon from '../../components/common/Icon';
 import { formatDate } from '../../utils/helpers';
 import './MyEngagementPage.css';
 
-function getLevelColor(level) {
+function getLevelBadgeVariant(level) {
   switch (level) {
     case 'Excellent': case 'High': case 'Highly Engaged': return 'success';
     case 'Good': case 'Moderate': case 'Active': return 'info';
-    case 'Moderate': case 'Emerging': case 'Moderately Active': return 'warning';
-    default: return 'muted';
+    case 'Emerging': case 'Moderately Active': return 'warning';
+    default: return 'default';
   }
 }
 
@@ -41,90 +41,189 @@ export default function MyEngagementPage() {
     if (user?.id) fetchData();
   }, [user?.id]);
 
-  if (loading) return <Loading fullPage message="Loading engagement data..." />;
-  if (!engagement) return <EmptyState icon="📊" title="No data" message="Unable to load engagement data." />;
+  if (loading) return <Loading fullPage message="Loading engagement analysis..." />;
+  if (!engagement) return <EmptyState icon="chart" title="No engagement data" message="Unable to load engagement records at this time." />;
 
   const { attendance, discussion, contribution, activityLevel, contributionLevel, overallLabel } = engagement;
 
   return (
-    <div className="container">
-      <div className="page-header">
-        <h1>My Engagement</h1>
-        <p>Track your activity participation and contributions</p>
+    <div className="container engagement-page">
+      <div className="page-header engagement-header">
+        <div>
+          <span className="eyebrow-label">Participation & Impact</span>
+          <h1>My Engagement</h1>
+          <p>A comprehensive analysis of your activity presence, discussion participation, and club contributions.</p>
+        </div>
+        <div className="engagement-overall-wrap">
+          <span className="engagement-overall-label">Overall Standing</span>
+          <Badge variant={getLevelBadgeVariant(overallLabel)} size="lg">
+            {overallLabel}
+          </Badge>
+        </div>
       </div>
 
-      {/* Overall Label */}
-      <div className="engagement-overall animate-fade-in">
-        <Badge variant={getLevelColor(overallLabel)} size="lg">{overallLabel}</Badge>
+      {/* ─── Two Dimension Grid: Activity & Contribution ── */}
+      <div className="engagement-dimensions-grid">
+        {/* Dimension 1: Activity */}
+        <div className="engagement-card card-surface animate-fade-in">
+          <div className="engagement-card__header">
+            <div className="engagement-card__title-wrap">
+              <Icon name="chart" size={18} />
+              <h2 className="engagement-card__title">Activity Dimension</h2>
+            </div>
+            <Badge variant={getLevelBadgeVariant(activityLevel)} size="sm">
+              Level: {activityLevel}
+            </Badge>
+          </div>
+
+          <div className="engagement-card__body">
+            <div className="engagement-hero-stat">
+              <div className="engagement-hero-circle">
+                <span className="engagement-hero-circle__val">{attendance.percentage}%</span>
+                <span className="engagement-hero-circle__label">Attendance</span>
+              </div>
+              <div className="engagement-hero-stat__desc">
+                <span className="engagement-hero-stat__highlight">
+                  {attendance.attended} sessions attended
+                </span>
+                <span className="engagement-hero-stat__sub">
+                  out of {attendance.total} total club meetings
+                </span>
+              </div>
+            </div>
+
+            <div className="engagement-metrics-list">
+              <div className="engagement-metric-row">
+                <span className="engagement-metric-label">
+                  <Icon name="check-circle" size={14} />
+                  Attended
+                </span>
+                <span className="engagement-metric-val">{attendance.attended}</span>
+              </div>
+              <div className="engagement-metric-row">
+                <span className="engagement-metric-label">
+                  <Icon name="x" size={14} />
+                  Missed
+                </span>
+                <span className="engagement-metric-val">{attendance.missed}</span>
+              </div>
+              <div className="engagement-metric-row">
+                <span className="engagement-metric-label">
+                  <Icon name="message" size={14} />
+                  Discussion Messages
+                </span>
+                <span className="engagement-metric-val">{discussion.meaningfulMessages}</span>
+              </div>
+              <div className="engagement-metric-row">
+                <span className="engagement-metric-label">
+                  <Icon name="calendar" size={14} />
+                  Active Forum Days
+                </span>
+                <span className="engagement-metric-val">{discussion.activeDays}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Dimension 2: Contribution */}
+        <div className="engagement-card card-surface animate-fade-in">
+          <div className="engagement-card__header">
+            <div className="engagement-card__title-wrap">
+              <Icon name="award" size={18} />
+              <h2 className="engagement-card__title">Contribution Dimension</h2>
+            </div>
+            <Badge variant={getLevelBadgeVariant(contributionLevel)} size="sm">
+              Level: {contributionLevel}
+            </Badge>
+          </div>
+
+          <div className="engagement-card__body">
+            <div className="engagement-hero-stat">
+              <div className="engagement-hero-circle engagement-hero-circle--points">
+                <span className="engagement-hero-circle__val">{contribution.totalPoints}</span>
+                <span className="engagement-hero-circle__label">Total Points</span>
+              </div>
+              <div className="engagement-hero-stat__desc">
+                <span className="engagement-hero-stat__highlight">
+                  Earned Contributions
+                </span>
+                <span className="engagement-hero-stat__sub">
+                  Peer and faculty verified work
+                </span>
+              </div>
+            </div>
+
+            <div className="engagement-metrics-list">
+              <div className="engagement-metric-row">
+                <span className="engagement-metric-label">
+                  <Icon name="document" size={14} />
+                  Discrete Tasks
+                </span>
+                <span className="engagement-metric-val">{contribution.taskCount}</span>
+              </div>
+              <div className="engagement-metric-row">
+                <span className="engagement-metric-label">
+                  <Icon name="book" size={14} />
+                  Academic Resources
+                </span>
+                <span className="engagement-metric-val">{contribution.resourceCount}</span>
+              </div>
+              <div className="engagement-metric-row">
+                <span className="engagement-metric-label">
+                  <Icon name="users" size={14} />
+                  Events Organized / Supported
+                </span>
+                <span className="engagement-metric-val">{contribution.eventOrganizedCount + contribution.eventSupportCount}</span>
+              </div>
+              <div className="engagement-metric-row">
+                <span className="engagement-metric-label">
+                  <Icon name="star" size={14} />
+                  Major Responsibilities
+                </span>
+                <span className="engagement-metric-val">{contribution.majorCount}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Activity Dimension */}
-      <section className="engagement-section animate-fade-in">
-        <h2 className="section-title">📊 Club Activity</h2>
-        <div className="grid-4 engagement-stats">
-          <StatCard icon="📋" label="Attendance" value={`${attendance.percentage}%`} color="primary" />
-          <StatCard icon="✅" label="Attended" value={attendance.attended} color="accent" />
-          <StatCard icon="❌" label="Missed" value={attendance.missed} color="warning" />
-          <StatCard icon="💬" label="Messages" value={discussion.meaningfulMessages} color="info" />
+      {/* ─── Timeline Feed ─────────────────────────────────── */}
+      <section className="engagement-timeline-section">
+        <div className="engagement-timeline-header">
+          <h2 className="section-title">Activity & Contribution Timeline</h2>
+          <span className="engagement-count-badge">{timeline.length} Events</span>
         </div>
-        <div className="engagement-detail-row">
-          <span className="engagement-detail-label">Attendance</span>
-          <div className="engagement-bar-wrapper">
-            <div className="engagement-bar" style={{ width: `${Math.min(attendance.percentage, 100)}%` }} />
-          </div>
-          <span className="engagement-detail-value">{attendance.attended} / {attendance.total}</span>
-          <Badge variant={getLevelColor(activityLevel)} size="sm">{activityLevel}</Badge>
-        </div>
-        <div className="engagement-detail-row">
-          <span className="engagement-detail-label">Discussion</span>
-          <span className="engagement-detail-value">{discussion.meaningfulMessages} meaningful messages · {discussion.activeDays} active days</span>
-        </div>
-      </section>
 
-      {/* Contribution Dimension */}
-      <section className="engagement-section animate-fade-in" style={{ animationDelay: '100ms' }}>
-        <h2 className="section-title">⭐ Club Contribution</h2>
-        <div className="grid-4 engagement-stats">
-          <StatCard icon="🏆" label="Total Points" value={contribution.totalPoints} color="primary" />
-          <StatCard icon="📋" label="Tasks" value={contribution.taskCount} color="accent" />
-          <StatCard icon="📚" label="Resources" value={contribution.resourceCount} color="info" />
-          <StatCard icon="🎯" label="Events" value={contribution.eventOrganizedCount + contribution.eventSupportCount} color="warning" />
-        </div>
-        {contribution.majorCount > 0 && (
-          <div className="engagement-detail-row">
-            <span className="engagement-detail-label">Major Responsibilities</span>
-            <span className="engagement-detail-value">{contribution.majorCount}</span>
-          </div>
-        )}
-        <div className="engagement-detail-row">
-          <span className="engagement-detail-label">Contribution Level</span>
-          <Badge variant={getLevelColor(contributionLevel)} size="sm">{contributionLevel}</Badge>
-        </div>
-      </section>
-
-      {/* Timeline */}
-      <section className="engagement-section animate-fade-in" style={{ animationDelay: '200ms' }}>
-        <h2 className="section-title">📅 Activity & Contribution Timeline</h2>
         {timeline.length === 0 ? (
-          <EmptyState icon="📅" title="No activity yet" message="Your engagement timeline will appear here." />
+          <EmptyState icon="calendar" title="No timeline records" message="Your session attendance and recorded contributions will form your timeline." />
         ) : (
-          <div className="engagement-timeline">
+          <div className="engagement-timeline-list card-surface">
             {timeline.map((item, i) => (
-              <div
-                key={i}
-                className={`timeline-item timeline-item--${item.type} ${item.status === 'absent' ? 'timeline-item--absent' : ''}`}
-                style={{ animationDelay: `${i * 40}ms` }}
-              >
-                <div className="timeline-item__icon">
-                  {item.type === 'contribution' ? item.icon : (item.status === 'present' ? '✓' : '✗')}
+              <div key={i} className={`timeline-row timeline-row--${item.type}`}>
+                <div className="timeline-row__icon-wrap">
+                  <Icon
+                    name={
+                      item.type === 'contribution'
+                        ? 'award'
+                        : item.status === 'present'
+                        ? 'check'
+                        : 'x'
+                    }
+                    size={14}
+                  />
                 </div>
-                <div className="timeline-item__content">
-                  <span className="timeline-item__title">{item.title}</span>
-                  <span className="timeline-item__date">{formatDate(item.date)}</span>
+
+                <div className="timeline-row__info">
+                  <span className="timeline-row__title">{item.title}</span>
+                  <span className="timeline-row__date">
+                    <Icon name="calendar" size={12} />
+                    {formatDate(item.date)}
+                  </span>
                 </div>
-                <div className="timeline-item__badge">
+
+                <div className="timeline-row__badge">
                   {item.type === 'contribution' ? (
-                    <span className="timeline-points">+{item.points}</span>
+                    <span className="timeline-points-tag">+{item.points} pts</span>
                   ) : (
                     <Badge variant={item.status === 'present' ? 'success' : 'error'} size="sm">
                       {item.status === 'present' ? 'Present' : 'Absent'}

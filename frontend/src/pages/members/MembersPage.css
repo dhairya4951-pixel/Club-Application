@@ -1,3 +1,105 @@
+/* ─── Academic Members Directory ─────────────────── */
+.members-page {
+  padding-bottom: var(--space-3xl);
+}
+
 .members-section {
   margin-bottom: var(--space-3xl);
+}
+
+.members-section__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding-bottom: var(--space-xs);
+}
+
+.members-section__header--split {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.members-section__title-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.members-section .section-title {
+  margin-bottom: 0;
+}
+
+.members-count-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: var(--color-bg-alt);
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+}
+
+/* Members Search */
+.members-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 280px;
+}
+
+.members-search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.members-search-input {
+  width: 100%;
+  padding: 7px 30px 7px 32px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  color: var(--color-text);
+  box-shadow: var(--shadow-xs);
+  transition: border-color var(--transition-fast);
+}
+
+.members-search-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.members-search-clear {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.members-empty {
+  padding: var(--space-2xl);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 768px) {
+  .members-section__header--split {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+  }
+  .members-search-wrap {
+    max-width: 100%;
+    margin-bottom: var(--space-sm);
+  }
 }

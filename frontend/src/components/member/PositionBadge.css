@@ -1,19 +1,55 @@
+/* ─── Academic Position Badges ─────────────────────── */
 .position-badge {
   display: inline-flex;
   align-items: center;
-  font-weight: 700;
+  font-family: var(--font-sans);
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  border-radius: var(--radius-full);
-  color: white;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  line-height: 1.2;
 }
 
-.position-badge--sm { padding: 2px 12px; font-size: 0.6rem; }
-.position-badge--md { padding: 4px 16px; font-size: 0.7rem; }
-.position-badge--lg { padding: 6px 20px; font-size: 0.75rem; }
+.position-badge--sm {
+  padding: 2px 8px;
+  font-size: 0.65rem;
+}
 
-.position-badge--president { background: var(--badge-president); }
-.position-badge--vice_president { background: var(--badge-vice-president); }
-.position-badge--general_secretary { background: var(--badge-general-secretary); }
-.position-badge--teacher_admin { background: var(--badge-teacher-admin); }
-.position-badge--none { display: none; }
+.position-badge--md {
+  padding: 3px 10px;
+  font-size: 0.72rem;
+}
+
+.position-badge--lg {
+  padding: 4px 12px;
+  font-size: var(--font-size-xs);
+}
+
+.position-badge--president {
+  background: var(--badge-president-bg);
+  color: var(--badge-president-text);
+  border-color: var(--badge-president-border);
+}
+
+.position-badge--vice_president {
+  background: var(--badge-vice-president-bg);
+  color: var(--badge-vice-president-text);
+  border-color: var(--badge-vice-president-border);
+}
+
+.position-badge--general_secretary {
+  background: var(--badge-general-secretary-bg);
+  color: var(--badge-general-secretary-text);
+  border-color: var(--badge-general-secretary-border);
+}
+
+.position-badge--teacher_admin {
+  background: var(--badge-teacher-admin-bg);
+  color: var(--badge-teacher-admin-text);
+  border-color: var(--badge-teacher-admin-border);
+}
+
+.position-badge--none {
+  display: none;
+}

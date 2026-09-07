@@ -8,6 +8,7 @@ import Modal from '../../components/common/Modal';
 import FormField from '../../components/common/FormField';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Loading from '../../components/common/Loading';
+import Icon from '../../components/common/Icon';
 import './ManageMembers.css';
 
 const LEADERSHIP_POSITIONS = ['president', 'vice_president', 'general_secretary'];
@@ -216,7 +217,7 @@ export default function ManageMembers() {
   const getDeleteMessage = () => {
     if (!deleteTarget) return '';
     if (LEADERSHIP_POSITIONS.includes(deleteTarget.position)) {
-      return `⚠️ ${deleteTarget.name} currently holds the ${POSITION_LABELS[deleteTarget.position]} position. You must remove their position before deleting this account.`;
+      return `${deleteTarget.name} currently holds the ${POSITION_LABELS[deleteTarget.position]} position. You must remove their leadership position before deleting this account.`;
     }
     return `Are you sure you want to delete ${deleteTarget.name}? This action cannot be undone.`;
   };
@@ -226,30 +227,40 @@ export default function ManageMembers() {
   if (loading) return <Loading fullPage message="Loading members..." />;
 
   return (
-    <div className="container">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-md)' }}>
+    <div className="container manage-members-page">
+      <div className="page-header manage-members-header">
         <div>
-          <h1>Manage Members</h1>
-          <p>Create, edit, and manage club member accounts</p>
+          <div className="page-header-badge">
+            <Icon name="users" size={14} /> Member Directory Administration
+          </div>
+          <h1 className="editorial-title">Manage Members</h1>
+          <p className="page-subtitle">
+            Enroll club members, update academic details, and oversee official student leadership assignments.
+          </p>
         </div>
-        <Button variant="primary" onClick={openCreate}>+ Create Member</Button>
+        <Button variant="primary" onClick={openCreate}>
+          <Icon name="plus" size={16} /> Create Member
+        </Button>
       </div>
 
       {/* Filters */}
-      <div className="manage-filters">
-        <input
-          type="text"
-          className="form-input manage-search"
-          placeholder="Search by name or email..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
+      <div className="manage-filters card-surface">
+        <div className="manage-search-wrapper">
+          <Icon name="search" size={16} className="manage-search-icon" />
+          <input
+            type="text"
+            className="manage-search-input"
+            placeholder="Search roster by name or email..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
         <div className="manage-role-filters">
           {[
             { value: 'all', label: 'All' },
-            { value: 'teacher', label: 'Teacher' },
+            { value: 'teacher', label: 'Faculty' },
             { value: 'leadership', label: 'Leadership' },
-            { value: 'member', label: 'Members' },
+            { value: 'member', label: 'General Members' },
           ].map(f => (
             <button
               key={f.value}
@@ -262,18 +273,22 @@ export default function ManageMembers() {
         </div>
       </div>
 
-      {error && <div className="profile-error" style={{ marginBottom: 'var(--space-lg)' }}>⚠️ {error}</div>}
+      {error && (
+        <div className="profile-error" style={{ marginBottom: 'var(--space-lg)' }}>
+          <Icon name="alert-circle" size={16} /> {error}
+        </div>
+      )}
 
       {/* Members Table */}
-      <div className="manage-table-wrapper">
+      <div className="manage-table-wrapper card-surface">
         <table className="manage-table">
           <thead>
             <tr>
-              <th>Member</th>
-              <th>Position</th>
+              <th>Member Details</th>
+              <th>Position / Role</th>
               <th>Course</th>
               <th>Year</th>
-              <th>Actions</th>
+              <th style={{ textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -292,18 +307,24 @@ export default function ManageMembers() {
                 <td>{member.course || '—'}</td>
                 <td>{member.year || '—'}</td>
                 <td>
-                  <div className="manage-actions">
+                  <div className="manage-actions" style={{ justifyContent: 'flex-end' }}>
                     {member.role !== 'teacher_admin' && (
-                      <Button variant="ghost" size="sm" onClick={() => openEdit(member)}>Edit</Button>
+                      <Button variant="ghost" size="sm" onClick={() => openEdit(member)}>
+                        <Icon name="edit" size={14} /> Edit
+                      </Button>
                     )}
                     {isTeacher && member.role !== 'teacher_admin' && (
-                      <Button variant="ghost" size="sm" onClick={() => openPositionModal(member)} className="text-accent">Position</Button>
+                      <Button variant="ghost" size="sm" onClick={() => openPositionModal(member)} className="text-accent">
+                        <Icon name="shield" size={14} /> Position
+                      </Button>
                     )}
                     {member.role !== 'teacher_admin' && (
-                      <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(member)} className="text-danger">Delete</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(member)} className="text-danger">
+                        <Icon name="trash" size={14} /> Delete
+                      </Button>
                     )}
                     {member.role === 'teacher_admin' && (
-                      <span className="manage-member-email" style={{ fontStyle: 'italic' }}>Super Admin</span>
+                      <span className="manage-member-badge-faculty">Faculty Advisor</span>
                     )}
                   </div>
                 </td>
@@ -316,22 +337,30 @@ export default function ManageMembers() {
       {/* Mobile Cards */}
       <div className="manage-mobile-list">
         {filtered.map(member => (
-          <div key={member.id} className="manage-mobile-card">
+          <div key={member.id} className="manage-mobile-card card-surface">
             <div className="manage-member-cell">
               <div className="manage-member-avatar">{getInitials(member.name)}</div>
               <div>
                 <span className="manage-member-name">{member.name}</span>
                 <span className="manage-member-email">{member.email}</span>
-                <PositionBadge position={member.position} role={member.role} />
+                <div style={{ marginTop: '4px' }}>
+                  <PositionBadge position={member.position} role={member.role} />
+                </div>
               </div>
             </div>
             {member.role !== 'teacher_admin' && (
               <div className="manage-actions" style={{ marginTop: 'var(--space-md)' }}>
-                <Button variant="secondary" size="sm" onClick={() => openEdit(member)}>Edit</Button>
+                <Button variant="secondary" size="sm" onClick={() => openEdit(member)}>
+                  <Icon name="edit" size={14} /> Edit
+                </Button>
                 {isTeacher && (
-                  <Button variant="accent" size="sm" onClick={() => openPositionModal(member)}>Position</Button>
+                  <Button variant="accent" size="sm" onClick={() => openPositionModal(member)}>
+                    <Icon name="shield" size={14} /> Position
+                  </Button>
                 )}
-                <Button variant="danger" size="sm" onClick={() => handleDeleteClick(member)}>Delete</Button>
+                <Button variant="danger" size="sm" onClick={() => handleDeleteClick(member)}>
+                  <Icon name="trash" size={14} /> Delete
+                </Button>
               </div>
             )}
           </div>
@@ -339,16 +368,20 @@ export default function ManageMembers() {
       </div>
 
       {/* Create/Edit Modal — NO position field */}
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editingId ? 'Edit Member' : 'Create Member'} size="md">
-        {error && <div className="profile-error" style={{ marginBottom: 'var(--space-lg)' }}>⚠️ {error}</div>}
-        <FormField label="Name" name="name" value={form.name} onChange={handleChange} required />
-        <FormField label="Email" name="email" type="email" value={form.email} onChange={handleChange} required />
-        {!editingId && (
-          <FormField label="Password" name="password" type="password" value={form.password} onChange={handleChange} required placeholder="Minimum 6 characters" />
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editingId ? 'Edit Member Profile' : 'Enroll New Member'} size="md">
+        {error && (
+          <div className="profile-error" style={{ marginBottom: 'var(--space-lg)' }}>
+            <Icon name="alert-circle" size={16} /> {error}
+          </div>
         )}
-        <FormField label="Course" name="course" value={form.course} onChange={handleChange} placeholder="e.g. B.A. Political Science" />
-        <FormField label="Year" name="year" value={form.year} onChange={handleChange} placeholder="e.g. 3rd Year" />
-        <FormField label="Bio" name="bio" type="textarea" value={form.bio} onChange={handleChange} rows={3} />
+        <FormField label="Full Name" name="name" value={form.name} onChange={handleChange} required placeholder="e.g. Dhairya Sharma" />
+        <FormField label="Email Address" name="email" type="email" value={form.email} onChange={handleChange} required placeholder="e.g. member@university.edu" />
+        {!editingId && (
+          <FormField label="Initial Password" name="password" type="password" value={form.password} onChange={handleChange} required placeholder="Minimum 6 characters" />
+        )}
+        <FormField label="Academic Course" name="course" value={form.course} onChange={handleChange} placeholder="e.g. B.A. Political Science" />
+        <FormField label="Academic Year" name="year" value={form.year} onChange={handleChange} placeholder="e.g. 3rd Year" />
+        <FormField label="Biographical Note" name="bio" type="textarea" value={form.bio} onChange={handleChange} rows={3} placeholder="Brief summary of policy interests and background" />
         <div className="profile-edit-actions">
           <Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button>
           <Button variant="primary" onClick={handleSave} loading={saving}>{editingId ? 'Save Changes' : 'Create Member'}</Button>
@@ -360,21 +393,25 @@ export default function ManageMembers() {
         <Modal
           isOpen={!!positionModal}
           onClose={() => { setPositionModal(null); setPositionError(''); }}
-          title={`Manage Position — ${positionModal?.memberName}`}
+          title={`Assign Leadership — ${positionModal?.memberName}`}
           size="md"
         >
-          {positionError && <div className="profile-error" style={{ marginBottom: 'var(--space-lg)' }}>⚠️ {positionError}</div>}
+          {positionError && (
+            <div className="profile-error" style={{ marginBottom: 'var(--space-lg)' }}>
+              <Icon name="alert-circle" size={16} /> {positionError}
+            </div>
+          )}
 
           <div className="position-selector">
-            <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-lg)' }}>
-              Select a leadership position for this member. Only one student can hold each position at a time.
+            <p className="position-selector__intro">
+              Designate official student leadership positions. Each leadership office can be held by only one active member at a time.
             </p>
 
             {[
-              { value: 'none', label: 'None / Normal Member' },
-              { value: 'president', label: 'President' },
-              { value: 'vice_president', label: 'Vice President' },
-              { value: 'general_secretary', label: 'General Secretary' },
+              { value: 'none', label: 'None / General Member', desc: 'Standard club membership privileges' },
+              { value: 'president', label: 'President', desc: 'Chief student executive officer' },
+              { value: 'vice_president', label: 'Vice President', desc: 'Second student executive officer' },
+              { value: 'general_secretary', label: 'General Secretary', desc: 'Secretariat administrator' },
             ].map(opt => {
               const holder = opt.value !== 'none'
                 ? members.find(m => m.position === opt.value && m.id !== positionModal?.memberId)
@@ -390,9 +427,10 @@ export default function ManageMembers() {
                   />
                   <div className="position-option__content">
                     <span className="position-option__label">{opt.label}</span>
+                    <span className="position-option__desc">{opt.desc}</span>
                     {holder && (
                       <span className="position-option__holder">
-                        Currently held by: <strong>{holder.name}</strong>
+                        <Icon name="alert-circle" size={12} /> Currently held by: <strong>{holder.name}</strong> (will be vacated upon reassignment)
                       </span>
                     )}
                   </div>
@@ -413,13 +451,13 @@ export default function ManageMembers() {
         isOpen={!!replaceConfirm}
         onClose={() => setReplaceConfirm(null)}
         onConfirm={() => executePositionAssignment(replaceConfirm.memberId, replaceConfirm.position)}
-        title="Replace Position Holder"
+        title="Reassign Leadership Office"
         message={
           replaceConfirm
-            ? `${replaceConfirm.currentHolder.name} is currently the ${POSITION_LABELS[replaceConfirm.position]}. Assigning this position to ${positionModal?.memberName} will remove ${replaceConfirm.currentHolder.name}'s ${POSITION_LABELS[replaceConfirm.position]} role. Do you want to continue?`
+            ? `${replaceConfirm.currentHolder.name} currently serves as the ${POSITION_LABELS[replaceConfirm.position]}. Conferring this position to ${positionModal?.memberName} will remove ${replaceConfirm.currentHolder.name}'s ${POSITION_LABELS[replaceConfirm.position]} role. Proceed with reassignment?`
             : ''
         }
-        confirmText="Confirm Change"
+        confirmText="Confirm Reassignment"
         loading={positionSaving}
       />
 
@@ -428,9 +466,9 @@ export default function ManageMembers() {
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={canDeleteTarget ? handleDelete : () => setDeleteTarget(null)}
-        title={canDeleteTarget ? 'Delete Member' : 'Cannot Delete'}
+        title={canDeleteTarget ? 'Delete Member Account' : 'Action Prohibited'}
         message={getDeleteMessage()}
-        confirmText={canDeleteTarget ? 'Delete' : 'OK'}
+        confirmText={canDeleteTarget ? 'Delete Account' : 'Acknowledge'}
         loading={deleting}
       />
     </div>

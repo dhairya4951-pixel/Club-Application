@@ -1,29 +1,154 @@
+.activity-attendance-page {
+  padding-bottom: var(--space-4xl);
+}
+
+.activity-attendance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.activity-attendance-header-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+/* Statistics Strip */
+.attendance-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.attendance-summary-card {
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-radius: var(--radius-md);
+}
+
+.attendance-summary-label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.attendance-summary-value {
+  font-family: var(--font-serif);
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.attendance-summary-card--present .attendance-summary-value {
+  color: #166534;
+}
+
+.attendance-summary-card--absent .attendance-summary-value {
+  color: #991B1B;
+}
+
+/* Toolbar */
+.attendance-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-md);
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.attendance-toolbar-label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.attendance-toolbar-buttons {
+  display: flex;
+  gap: var(--space-sm);
+}
+
 .att-table-wrapper {
   overflow-x: auto;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
+  padding: 0;
 }
 
-.att-status {
+/* Status Badges */
+.att-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
-  font-size: var(--font-size-sm);
-}
-.att-status--present { color: var(--color-success); }
-.att-status--absent { color: var(--color-error); }
-
-.att-toggle {
-  padding: 6px 16px;
+  padding: 3px 10px;
   border-radius: var(--radius-full);
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
-  color: var(--color-text-secondary);
+}
+
+.att-status-badge--present {
+  background: #DCFCE7;
+  color: #166534;
+  border: 1px solid #BBF7D0;
+}
+
+.att-status-badge--absent {
+  background: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #FECACA;
+}
+
+/* Toggle Buttons */
+.att-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-sans);
   font-size: var(--font-size-xs);
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-fast);
   white-space: nowrap;
 }
-.att-toggle:hover { border-color: var(--color-primary); color: var(--color-text); }
-.att-toggle--present { background: var(--color-success-bg); border-color: var(--color-success); color: var(--color-success); }
-.att-toggle--absent { background: var(--color-error-bg); border-color: var(--color-error); color: var(--color-error); }
+
+.att-toggle-btn--present {
+  background: #FFFFFF;
+  border: 1px solid #FCA5A5;
+  color: #DC2626;
+}
+
+.att-toggle-btn--present:hover {
+  background: #FEF2F2;
+  border-color: #DC2626;
+}
+
+.att-toggle-btn--absent {
+  background: #FFFFFF;
+  border: 1px solid #86EFAC;
+  color: #16A34A;
+}
+
+.att-toggle-btn--absent:hover {
+  background: #F0FDF4;
+  border-color: #16A34A;
+}
+
+@media (max-width: 768px) {
+  .attendance-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

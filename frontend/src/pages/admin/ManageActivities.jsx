@@ -8,6 +8,7 @@ import FormField from '../../components/common/FormField';
 import ImageUpload from '../../components/common/ImageUpload';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Loading from '../../components/common/Loading';
+import Icon from '../../components/common/Icon';
 import { formatDate, getStatusColor } from '../../utils/helpers';
 import './ManageActivities.css';
 
@@ -124,21 +125,30 @@ export default function ManageActivities() {
   const statusLabels = { upcoming: 'Upcoming', completed: 'Completed', cancelled: 'Cancelled' };
 
   return (
-    <div className="container">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-md)' }}>
+    <div className="container manage-activities-page">
+      <div className="page-header manage-activities-header">
         <div>
-          <h1>Manage Activities</h1>
-          <p>Create and manage club events and activity posts</p>
+          <div className="page-header-badge">
+            <Icon name="calendar" size={14} /> Activity Registry
+          </div>
+          <h1 className="editorial-title">Manage Activities</h1>
+          <p className="page-subtitle">Schedule upcoming events, record policy forums, and archive club sessions.</p>
         </div>
-        <Button variant="primary" onClick={openCreate}>+ Create Activity</Button>
+        <Button variant="primary" onClick={openCreate}>
+          <Icon name="plus" size={16} /> Create Activity
+        </Button>
       </div>
 
       {/* Desktop Table */}
-      <div className="manage-table-wrapper">
+      <div className="manage-table-wrapper card-surface">
         <table className="manage-table">
           <thead>
             <tr>
-              <th>Activity</th><th>Date</th><th>Status</th><th>Category</th><th>Actions</th>
+              <th>Event Title & Venue</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Classification</th>
+              <th style={{ textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -146,27 +156,46 @@ export default function ManageActivities() {
               <tr key={a.id}>
                 <td>
                   <div className="activity-cell">
-                    {a.coverImage && (
+                    {a.coverImage ? (
                       <img src={a.coverImage} alt="" className="activity-cell__thumb" />
+                    ) : (
+                      <div className="activity-cell__thumb-placeholder">
+                        <Icon name="calendar" size={16} />
+                      </div>
                     )}
                     <div>
                       <span className="manage-member-name">{a.title}</span>
-                      <span className="manage-member-email">{a.location}</span>
+                      <span className="manage-member-email">
+                        {a.location ? (
+                          <><Icon name="map-pin" size={11} /> {a.location}</>
+                        ) : 'Campus Location TBD'}
+                      </span>
                     </div>
                   </div>
                 </td>
-                <td className="nowrap">{formatDate(a.date)}</td>
+                <td className="nowrap">
+                  <span className="activity-table-date">{formatDate(a.date)}</span>
+                  {a.time && <span className="activity-table-time">{a.time}</span>}
+                </td>
                 <td><Badge variant={getStatusColor(a.status)} size="sm">{statusLabels[a.status]}</Badge></td>
-                <td>{a.category || '—'}</td>
+                <td><span className="activity-category-pill">{a.category || 'Other'}</span></td>
                 <td>
-                  <div className="manage-actions">
-                    <Button variant="ghost" size="sm" onClick={() => openEdit(a)}>Edit</Button>
-                    <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(a)} className="text-danger">Delete</Button>
+                  <div className="manage-actions" style={{ justifyContent: 'flex-end' }}>
+                    <Button variant="ghost" size="sm" onClick={() => openEdit(a)}>
+                      <Icon name="edit" size={14} /> Edit
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(a)} className="text-danger">
+                      <Icon name="trash" size={14} /> Delete
+                    </Button>
                     {a.status === 'upcoming' && (
-                      <Button variant="accent" size="sm" onClick={() => handleMarkCompleted(a)} loading={completing === a.id}>✓ Mark Completed</Button>
+                      <Button variant="accent" size="sm" onClick={() => handleMarkCompleted(a)} loading={completing === a.id}>
+                        <Icon name="check-circle" size={14} /> Complete
+                      </Button>
                     )}
                     {a.status === 'completed' && (
-                      <Button variant="primary" size="sm" onClick={() => navigate(`/admin/attendance/${a.id}`)}>📋 Attendance</Button>
+                      <Button variant="primary" size="sm" onClick={() => navigate(`/admin/attendance/${a.id}`)}>
+                        <Icon name="check-circle" size={14} /> Attendance
+                      </Button>
                     )}
                   </div>
                 </td>
@@ -179,7 +208,7 @@ export default function ManageActivities() {
       {/* Mobile Cards */}
       <div className="manage-mobile-list">
         {activities.map(a => (
-          <div key={a.id} className="manage-mobile-card">
+          <div key={a.id} className="manage-mobile-card card-surface">
             {a.coverImage && (
               <img src={a.coverImage} alt="" className="activity-mobile-thumb" />
             )}
@@ -188,38 +217,50 @@ export default function ManageActivities() {
             <div style={{ marginTop: 'var(--space-sm)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Badge variant={getStatusColor(a.status)} size="sm">{statusLabels[a.status]}</Badge>
               <div className="manage-actions">
-                <Button variant="secondary" size="sm" onClick={() => openEdit(a)}>Edit</Button>
-                <Button variant="danger" size="sm" onClick={() => setDeleteTarget(a)}>Delete</Button>
+                <Button variant="secondary" size="sm" onClick={() => openEdit(a)}>
+                  <Icon name="edit" size={14} /> Edit
+                </Button>
+                <Button variant="danger" size="sm" onClick={() => setDeleteTarget(a)}>
+                  <Icon name="trash" size={14} /> Delete
+                </Button>
               </div>
             </div>
             {a.status === 'upcoming' && (
-              <Button variant="accent" size="sm" style={{ marginTop: 'var(--space-sm)', width: '100%' }} onClick={() => handleMarkCompleted(a)} loading={completing === a.id}>✓ Mark as Completed</Button>
+              <Button variant="accent" size="sm" style={{ marginTop: 'var(--space-sm)', width: '100%' }} onClick={() => handleMarkCompleted(a)} loading={completing === a.id}>
+                <Icon name="check-circle" size={14} /> Mark as Completed
+              </Button>
             )}
             {a.status === 'completed' && (
-              <Button variant="primary" size="sm" style={{ marginTop: 'var(--space-sm)', width: '100%' }} onClick={() => navigate(`/admin/attendance/${a.id}`)}>📋 Manage Attendance</Button>
+              <Button variant="primary" size="sm" style={{ marginTop: 'var(--space-sm)', width: '100%' }} onClick={() => navigate(`/admin/attendance/${a.id}`)}>
+                <Icon name="check-circle" size={14} /> Manage Attendance
+              </Button>
             )}
           </div>
         ))}
       </div>
 
       {/* Create/Edit Modal */}
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editingId ? 'Edit Activity' : 'Create Activity'} size="lg">
-        {error && <div className="profile-error" style={{ marginBottom: 'var(--space-lg)' }}>⚠️ {error}</div>}
-        <FormField label="Title" name="title" value={form.title} onChange={handleChange} required />
-        <FormField label="Description" name="description" type="textarea" value={form.description} onChange={handleChange} required rows={4} />
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editingId ? 'Edit Activity Details' : 'Create New Activity'} size="lg">
+        {error && (
+          <div className="profile-error" style={{ marginBottom: 'var(--space-lg)' }}>
+            <Icon name="alert-circle" size={16} /> {error}
+          </div>
+        )}
+        <FormField label="Activity Title" name="title" value={form.title} onChange={handleChange} required placeholder="e.g. National Budget Analysis Roundtable" />
+        <FormField label="Overview & Synopsis" name="description" type="textarea" value={form.description} onChange={handleChange} required rows={4} placeholder="Comprehensive description of the activity agenda and outcomes..." />
         <div className="form-row">
-          <FormField label="Date" name="date" type="date" value={form.date} onChange={handleChange} required />
-          <FormField label="Time" name="time" value={form.time} onChange={handleChange} required placeholder="e.g. 4:00 PM" />
+          <FormField label="Event Date" name="date" type="date" value={form.date} onChange={handleChange} required />
+          <FormField label="Session Time" name="time" value={form.time} onChange={handleChange} required placeholder="e.g. 4:00 PM – 6:00 PM" />
         </div>
-        <FormField label="Location" name="location" value={form.location} onChange={handleChange} required />
+        <FormField label="Venue Location" name="location" value={form.location} onChange={handleChange} required placeholder="e.g. Seminar Hall 3 / Virtual Link" />
         <div className="form-row">
           <FormField label="Status" name="status" type="select" value={form.status} onChange={handleChange} options={STATUS_OPTIONS} />
-          <FormField label="Category" name="category" type="select" value={form.category} onChange={handleChange} options={CATEGORY_OPTIONS} />
+          <FormField label="Activity Category" name="category" type="select" value={form.category} onChange={handleChange} options={CATEGORY_OPTIONS} />
         </div>
 
         {/* Cover Image — Upload from device OR URL */}
-        <div className="form-field">
-          <label className="form-label">Cover Image</label>
+        <div className="form-field" style={{ marginTop: 'var(--space-sm)' }}>
+          <label className="form-label">Cover Photograph</label>
           <ImageUpload
             currentImage={form.coverImage || null}
             onImageChange={handleCoverImageChange}
@@ -227,13 +268,12 @@ export default function ManageActivities() {
             activityId={editingId}
             showUrlOption={true}
             shape="rectangle"
-            placeholder="🖼️"
           />
         </div>
 
         <div className="profile-edit-actions">
           <Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button>
-          <Button variant="primary" onClick={handleSave} loading={saving}>{editingId ? 'Save Changes' : 'Create Activity'}</Button>
+          <Button variant="primary" onClick={handleSave} loading={saving}>{editingId ? 'Save Changes' : 'Publish Activity'}</Button>
         </div>
       </Modal>
 
@@ -242,8 +282,8 @@ export default function ManageActivities() {
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
         title="Delete Activity"
-        message={`Are you sure you want to delete "${deleteTarget?.title}"? This action cannot be undone.`}
-        confirmText="Delete"
+        message={`Are you sure you want to permanently delete "${deleteTarget?.title}"? All associated attendance records will be removed.`}
+        confirmText="Delete Activity"
         loading={deleting}
       />
     </div>

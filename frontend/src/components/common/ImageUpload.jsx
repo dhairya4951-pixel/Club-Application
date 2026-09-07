@@ -1,22 +1,12 @@
 import { useState, useRef } from 'react';
 import { imageService } from '../../services/imageService';
+import Icon from './Icon';
 import './ImageUpload.css';
 
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_SIZE_MB = 5;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
-/**
- * Reusable image upload component.
- *
- * @param {string}   currentImage   - Current image URL (or null)
- * @param {function} onImageChange  - Callback: (newUrl | null) => void
- * @param {'profile'|'activity'} uploadType - Determines which API endpoint to use
- * @param {string}   [activityId]   - Required for activity uploads (edit mode)
- * @param {boolean}  [showUrlOption] - Show "Use Image URL" toggle (default: false)
- * @param {'circle'|'rectangle'} [shape] - Avatar shape (default: 'rectangle')
- * @param {string}   [placeholder]  - Placeholder text/initials when no image
- */
 export default function ImageUpload({
   currentImage,
   onImageChange,
@@ -24,7 +14,7 @@ export default function ImageUpload({
   activityId,
   showUrlOption = false,
   shape = 'rectangle',
-  placeholder = '📷',
+  placeholder = 'photo',
 }) {
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
@@ -41,7 +31,6 @@ export default function ImageUpload({
     setError('');
     setSuccess('');
 
-    // Client-side validation
     if (!ACCEPTED_TYPES.includes(file.type)) {
       setError('Please upload a valid JPG, PNG, or WEBP image.');
       return;
@@ -52,11 +41,9 @@ export default function ImageUpload({
       return;
     }
 
-    // Show local preview immediately
     const localPreview = URL.createObjectURL(file);
     setPreviewUrl(localPreview);
 
-    // Upload to server
     uploadFile(file);
   };
 
@@ -71,16 +58,15 @@ export default function ImageUpload({
         result = await imageService.uploadActivityImage(file, activityId);
       }
 
-      setPreviewUrl(null); // Clear local preview, use server URL
+      setPreviewUrl(null);
       onImageChange(result.url);
-      setSuccess('✓ Image uploaded');
+      setSuccess('Image uploaded successfully');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError(err.message || 'Upload failed');
       setPreviewUrl(null);
     } finally {
       setUploading(false);
-      // Reset file input so the same file can be re-selected
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -96,7 +82,6 @@ export default function ImageUpload({
         setUploading(true);
         await imageService.removeProfileImage();
       } catch (err) {
-        // Continue even if delete fails — clear the image on client side
         console.error('Failed to remove image:', err);
       } finally {
         setUploading(false);
@@ -113,7 +98,7 @@ export default function ImageUpload({
       return;
     }
     onImageChange(urlInput.trim());
-    setSuccess('✓ Image URL set');
+    setSuccess('Image URL set');
     setTimeout(() => setSuccess(''), 3000);
   };
 
@@ -126,7 +111,13 @@ export default function ImageUpload({
         {displayImage ? (
           <img src={displayImage} alt="Preview" className="image-upload__img" />
         ) : (
-          <span className="image-upload__placeholder">{placeholder}</span>
+          <span className="image-upload__placeholder">
+            {typeof placeholder === 'string' && placeholder.length <= 3 ? (
+              <span className="image-upload__initials">{placeholder}</span>
+            ) : (
+              <Icon name="camera" size={32} />
+            )}
+          </span>
         )}
         {uploading && (
           <div className="image-upload__loading">
@@ -149,11 +140,12 @@ export default function ImageUpload({
         {!useUrl && (
           <button
             type="button"
-            className="image-upload__btn image-upload__btn--primary"
+            className="btn btn--secondary btn--sm"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
           >
-            {currentImage ? '📷 Change Photo' : '📷 Upload from Device'}
+            <Icon name="camera" size={14} />
+            <span>{currentImage ? 'Change Photo' : 'Upload from Device'}</span>
           </button>
         )}
 
@@ -162,10 +154,11 @@ export default function ImageUpload({
             {!useUrl ? (
               <button
                 type="button"
-                className="image-upload__btn image-upload__btn--secondary"
+                className="btn btn--ghost btn--sm"
                 onClick={() => { setUseUrl(true); setError(''); }}
               >
-                🔗 Use Image URL
+                <Icon name="link" size={14} />
+                <span>Use Image URL</span>
               </button>
             ) : (
               <div className="image-upload__url-input">
@@ -173,23 +166,23 @@ export default function ImageUpload({
                   type="url"
                   value={urlInput}
                   onChange={(e) => setUrlInput(e.target.value)}
-                  placeholder="https://..."
+                  placeholder="https://images.unsplash.com/..."
                   className="form-input"
                 />
                 <div className="image-upload__url-actions">
                   <button
                     type="button"
-                    className="image-upload__btn image-upload__btn--primary"
+                    className="btn btn--primary btn--sm"
                     onClick={handleUrlSubmit}
                   >
                     Set URL
                   </button>
                   <button
                     type="button"
-                    className="image-upload__btn image-upload__btn--secondary"
+                    className="btn btn--ghost btn--sm"
                     onClick={() => { setUseUrl(false); setUrlInput(''); setError(''); }}
                   >
-                    Upload Instead
+                    Upload File Instead
                   </button>
                 </div>
               </div>
@@ -200,17 +193,28 @@ export default function ImageUpload({
         {displayImage && (
           <button
             type="button"
-            className="image-upload__btn image-upload__btn--danger"
+            className="btn btn--ghost btn--sm text-danger"
             onClick={handleRemove}
             disabled={uploading}
           >
-            ✕ Remove
+            <Icon name="trash" size={14} />
+            <span>Remove</span>
           </button>
         )}
 
         {/* Feedback */}
-        {error && <p className="image-upload__error">⚠️ {error}</p>}
-        {success && <p className="image-upload__success">{success}</p>}
+        {error && (
+          <p className="image-upload__error">
+            <Icon name="alert" size={14} />
+            <span>{error}</span>
+          </p>
+        )}
+        {success && (
+          <p className="image-upload__success">
+            <Icon name="check" size={14} />
+            <span>{success}</span>
+          </p>
+        )}
       </div>
     </div>
   );

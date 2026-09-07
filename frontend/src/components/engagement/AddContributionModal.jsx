@@ -3,14 +3,15 @@ import { contributionService } from '../../services/contributionService';
 import Modal from '../common/Modal';
 import FormField from '../common/FormField';
 import Button from '../common/Button';
+import Icon from '../common/Icon';
 import './AddContributionModal.css';
 
 const CATEGORY_OPTIONS = [
-  { value: 'TASK', label: '📋 Task' },
-  { value: 'RESOURCE', label: '📚 Resource' },
-  { value: 'EVENT_SUPPORT', label: '🤝 Event Support' },
-  { value: 'EVENT_ORGANIZED', label: '🎯 Event Organized' },
-  { value: 'MAJOR_RESPONSIBILITY', label: '⭐ Major Responsibility / Initiative' },
+  { value: 'TASK', label: 'Task Execution' },
+  { value: 'RESOURCE', label: 'Research & Written Resource' },
+  { value: 'EVENT_SUPPORT', label: 'Event Support & Logistics' },
+  { value: 'EVENT_ORGANIZED', label: 'Event Leadership & Organization' },
+  { value: 'MAJOR_RESPONSIBILITY', label: 'Major Institutional Initiative' },
 ];
 
 export default function AddContributionModal({
@@ -116,10 +117,14 @@ export default function AddContributionModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={editingContribution ? 'Edit Contribution' : 'Add Contribution'}
+      title={editingContribution ? 'Edit Contribution Record' : 'Record Member Contribution'}
       size="lg"
     >
-      {error && <div className="profile-error" style={{ marginBottom: 'var(--space-lg)' }}>⚠️ {error}</div>}
+      {error && (
+        <div className="profile-error" style={{ marginBottom: 'var(--space-lg)' }}>
+          <Icon name="alert-circle" size={16} /> {error}
+        </div>
+      )}
 
       <FormField
         label="Member"
@@ -128,7 +133,7 @@ export default function AddContributionModal({
         value={form.memberId}
         onChange={handleChange}
         options={memberOptions}
-        placeholder="Select member..."
+        placeholder="Select enrolled member..."
         required
         disabled={!!editingContribution || !!preselectedMemberId}
       />
@@ -140,52 +145,55 @@ export default function AddContributionModal({
         value={form.category}
         onChange={handleChange}
         options={CATEGORY_OPTIONS}
-        placeholder="Select category..."
+        placeholder="Select policy / club category..."
         required
       />
 
       {form.category && (
         <FormField
-          label="Contribution Type"
+          label="Specific Contribution Type"
           name="contributionType"
           type="select"
           value={form.contributionType}
           onChange={handleChange}
           options={typeOptions}
-          placeholder="Select type..."
+          placeholder="Select verified type..."
           required
         />
       )}
 
       {autoPoints !== null && (
         <div className="contribution-points-display">
-          <span className="contribution-points-label">Points (auto-calculated)</span>
-          <span className="contribution-points-value">+{autoPoints}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Icon name="award" size={18} />
+            <span className="contribution-points-label">Merit Points (Auto-assigned)</span>
+          </div>
+          <span className="contribution-points-value">+{autoPoints} pts</span>
         </div>
       )}
 
       <FormField
-        label="Title"
+        label="Title / Brief Headline"
         name="title"
         value={form.title}
         onChange={handleChange}
-        placeholder="e.g. Created debate registration form"
+        placeholder="e.g. Authored Policy Brief on Renewable Energy Subsidies"
         required
       />
 
       <FormField
-        label="Description"
+        label="Detailed Description & Evidence"
         name="description"
         type="textarea"
         value={form.description}
         onChange={handleChange}
-        placeholder="Describe the contribution..."
+        placeholder="Provide specifics on the member's deliverable and impact..."
         required
         rows={3}
       />
 
       <FormField
-        label="Date"
+        label="Date of Completion"
         name="date"
         type="date"
         value={form.date}
@@ -194,7 +202,7 @@ export default function AddContributionModal({
       />
 
       <FormField
-        label="External Link (optional)"
+        label="External Reference Link (optional)"
         name="externalLink"
         value={form.externalLink}
         onChange={handleChange}
@@ -204,7 +212,7 @@ export default function AddContributionModal({
       <div className="profile-edit-actions">
         <Button variant="secondary" onClick={onClose}>Cancel</Button>
         <Button variant="primary" onClick={handleSave} loading={saving}>
-          {editingContribution ? 'Save Changes' : 'Add Contribution'}
+          {editingContribution ? 'Save Changes' : 'Log Contribution'}
         </Button>
       </div>
     </Modal>

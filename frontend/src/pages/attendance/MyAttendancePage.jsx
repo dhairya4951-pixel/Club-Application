@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { attendanceService } from '../../services/attendanceService';
-import StatCard from '../../components/dashboard/StatCard';
 import Badge from '../../components/common/Badge';
 import Loading from '../../components/common/Loading';
 import EmptyState from '../../components/common/EmptyState';
+import Icon from '../../components/common/Icon';
 import { formatDate } from '../../utils/helpers';
 import './MyAttendancePage.css';
 
@@ -25,16 +25,21 @@ export default function MyAttendancePage() {
     fetchAttendance();
   }, []);
 
-  if (loading) return <Loading fullPage message="Loading attendance..." />;
+  if (loading) return <Loading fullPage message="Loading attendance records..." />;
 
   if (!data || data.records.length === 0) {
     return (
-      <div className="container">
+      <div className="container attendance-page">
         <div className="page-header">
-          <h1>My Activities</h1>
-          <p>Track your attendance and activity participation</p>
+          <span className="eyebrow-label">Member Records</span>
+          <h1>My Attendance</h1>
+          <p>Track your attendance history and active participation across club sessions.</p>
         </div>
-        <EmptyState icon="📊" title="No attendance records" message="You don't have any attendance records yet." />
+        <EmptyState
+          icon="chart"
+          title="No attendance records"
+          message="You don't have any logged attendance records yet. Attend an event to begin building your record."
+        />
       </div>
     );
   }
@@ -42,40 +47,75 @@ export default function MyAttendancePage() {
   const { stats, records } = data;
 
   return (
-    <div className="container">
+    <div className="container attendance-page">
       <div className="page-header">
-        <h1>My Activities</h1>
-        <p>Track your attendance and activity participation</p>
+        <span className="eyebrow-label">Member Records</span>
+        <h1>My Attendance</h1>
+        <p>Track your attendance history and active participation across club sessions.</p>
       </div>
 
-      {/* Stats */}
-      <div className="grid-4 attendance-stats animate-fade-in">
-        <StatCard icon="📋" label="Total Activities" value={stats.totalActivities} color="primary" />
-        <StatCard icon="✅" label="Attended" value={stats.attended} color="accent" />
-        <StatCard icon="❌" label="Missed" value={stats.missed} color="warning" />
-        <StatCard icon="📊" label="Attendance %" value={`${stats.attendancePercentage}%`} color="info" />
+      {/* ─── Hero Attendance Metric Card ─────────────────── */}
+      <div className="attendance-hero-card card-surface animate-fade-in">
+        <div className="attendance-hero-card__gauge-wrap">
+          <div className="attendance-hero-card__circle">
+            <span className="attendance-hero-card__pct">{stats.attendancePercentage}%</span>
+            <span className="attendance-hero-card__pct-label">Attendance</span>
+          </div>
+        </div>
+
+        <div className="attendance-hero-card__details">
+          <div className="attendance-hero-metric">
+            <span className="attendance-hero-metric__val">{stats.attended}</span>
+            <span className="attendance-hero-metric__label">Sessions Attended</span>
+          </div>
+          <div className="attendance-hero-metric-divider" />
+          <div className="attendance-hero-metric">
+            <span className="attendance-hero-metric__val">{stats.missed}</span>
+            <span className="attendance-hero-metric__label">Sessions Missed</span>
+          </div>
+          <div className="attendance-hero-metric-divider" />
+          <div className="attendance-hero-metric">
+            <span className="attendance-hero-metric__val">{stats.totalActivities}</span>
+            <span className="attendance-hero-metric__label">Total Sessions</span>
+          </div>
+        </div>
       </div>
 
-      {/* Records */}
-      <section className="attendance-records">
-        <h2 className="section-title">Activity History</h2>
-        <div className="attendance-list">
-          {records.map((record, i) => (
-            <div
-              key={record.id}
-              className="attendance-item animate-fade-in"
-              style={{ animationDelay: `${i * 50}ms` }}
-            >
-              <span className={`attendance-icon ${record.status === 'present' ? 'attendance-icon--present' : 'attendance-icon--absent'}`}>
-                {record.status === 'present' ? '✓' : '✗'}
-              </span>
-              <div className="attendance-item__info">
-                <span className="attendance-item__title">{record.activity?.title || 'Unknown Activity'}</span>
-                <span className="attendance-item__date">{formatDate(record.activity?.date)}</span>
+      {/* ─── Activity History List ────────────────────────── */}
+      <section className="attendance-records-section">
+        <div className="attendance-records-header">
+          <h2 className="section-title">Activity History</h2>
+          <span className="attendance-count-badge">{records.length} Records</span>
+        </div>
+
+        <div className="attendance-list card-surface">
+          {records.map((record) => (
+            <div key={record.id} className="attendance-row">
+              <div className="attendance-row__indicator">
+                <span
+                  className={`attendance-dot ${
+                    record.status === 'present' ? 'attendance-dot--present' : 'attendance-dot--absent'
+                  }`}
+                >
+                  <Icon name={record.status === 'present' ? 'check' : 'x'} size={12} />
+                </span>
               </div>
-              <Badge variant={record.status === 'present' ? 'success' : 'error'} size="sm">
-                {record.status === 'present' ? 'Present' : 'Absent'}
-              </Badge>
+
+              <div className="attendance-row__info">
+                <span className="attendance-row__title">
+                  {record.activity?.title || 'Club Session'}
+                </span>
+                <span className="attendance-row__meta">
+                  <Icon name="calendar" size={13} />
+                  {formatDate(record.activity?.date)}
+                </span>
+              </div>
+
+              <div className="attendance-row__badge">
+                <Badge variant={record.status === 'present' ? 'success' : 'error'} size="sm">
+                  {record.status === 'present' ? 'Present' : 'Absent'}
+                </Badge>
+              </div>
             </div>
           ))}
         </div>

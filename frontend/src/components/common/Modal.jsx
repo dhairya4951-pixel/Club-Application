@@ -1,5 +1,6 @@
-import './Modal.css';
 import { useEffect } from 'react';
+import Icon from './Icon';
+import './Modal.css';
 
 export default function Modal({ isOpen, onClose, title, children, size = 'md' }) {
   useEffect(() => {
@@ -22,7 +23,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
         <div className="modal-header">
           <h2 className="modal-title">{title}</h2>
           <button className="modal-close" onClick={onClose} aria-label="Close">
-            ✕
+            <Icon name="x" size={18} />
           </button>
         </div>
         <div className="modal-body">

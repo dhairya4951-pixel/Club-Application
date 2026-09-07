@@ -8,7 +8,8 @@ import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
 import Loading from '../../components/common/Loading';
-import { formatDate, formatDateShort, getInitials } from '../../utils/helpers';
+import Icon from '../../components/common/Icon';
+import { formatDateShort, getInitials } from '../../utils/helpers';
 import './ManageEngagement.css';
 
 function getLevelColor(level) {
@@ -16,9 +17,17 @@ function getLevelColor(level) {
     case 'Excellent': case 'High': case 'Highly Engaged': return 'success';
     case 'Good': case 'Moderate': case 'Active': return 'info';
     case 'Emerging': case 'Moderately Active': return 'warning';
-    default: return 'muted';
+    default: return 'neutral';
   }
 }
+
+const CATEGORY_ICONS = {
+  TASK: 'document',
+  RESOURCE: 'book',
+  EVENT_SUPPORT: 'users',
+  EVENT_ORGANIZED: 'award',
+  MAJOR_RESPONSIBILITY: 'star',
+};
 
 export default function ManageEngagement() {
   const navigate = useNavigate();
@@ -106,36 +115,47 @@ export default function ManageEngagement() {
     e.member.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) return <Loading fullPage message="Loading engagement data..." />;
+  if (loading) return <Loading fullPage message="Loading engagement registry..." />;
 
   return (
-    <div className="container">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-md)' }}>
+    <div className="container manage-engagement-page">
+      <div className="page-header manage-engagement-header">
         <div>
-          <h1>Member Engagement</h1>
-          <p>View and manage member activity and contributions</p>
+          <div className="page-header-badge">
+            <Icon name="award" size={14} /> Merit & Engagement Governance
+          </div>
+          <h1 className="editorial-title">Member Engagement & Contributions</h1>
+          <p className="page-subtitle">Record and audit verified member contributions, monitor attendance records, and review standing.</p>
         </div>
-        <Button variant="primary" onClick={handleAddContribution}>+ Add Contribution</Button>
+        <Button variant="primary" onClick={handleAddContribution}>
+          <Icon name="plus" size={16} /> Log Contribution
+        </Button>
       </div>
 
-      {/* Search */}
-      <div className="engagement-search">
-        <input
-          type="text"
-          className="form-input"
-          placeholder="Search members..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
+      {/* Search Bar */}
+      <div className="engagement-search card-surface">
+        <div className="engagement-search-inner">
+          <Icon name="search" size={16} className="engagement-search-icon" />
+          <input
+            type="text"
+            className="engagement-search-input"
+            placeholder="Search member registry by name or email..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
       </div>
 
       <div className="engagement-layout">
         {/* Member List */}
         <div className="engagement-member-list">
+          <div className="engagement-list-title">
+            <span>Members ({filtered.length})</span>
+          </div>
           {filtered.map((e, i) => (
             <div
               key={e.member.id}
-              className={`engagement-member-card ${selectedMember?.member.id === e.member.id ? 'engagement-member-card--active' : ''}`}
+              className={`engagement-member-card card-surface ${selectedMember?.member.id === e.member.id ? 'engagement-member-card--active' : ''}`}
               onClick={() => handleSelectMember(e)}
               style={{ animationDelay: `${i * 30}ms` }}
             >
@@ -152,7 +172,7 @@ export default function ManageEngagement() {
                   <span className="engagement-mini-stat__value">{e.attendance.percentage}%</span>
                 </div>
                 <div className="engagement-mini-stat">
-                  <span className="engagement-mini-stat__label">Points</span>
+                  <span className="engagement-mini-stat__label">Merit Pts</span>
                   <span className="engagement-mini-stat__value">{e.contribution.totalPoints}</span>
                 </div>
                 <Badge variant={getLevelColor(e.overallLabel)} size="sm">{e.overallLabel}</Badge>
@@ -162,32 +182,35 @@ export default function ManageEngagement() {
         </div>
 
         {/* Detail Panel */}
-        <div className="engagement-detail-panel">
+        <div className="engagement-detail-panel card-surface">
           {!selectedMember ? (
             <div className="engagement-detail-empty">
-              <span style={{ fontSize: '3rem' }}>👈</span>
-              <p>Select a member to view their engagement details</p>
+              <div className="engagement-detail-empty-icon">
+                <Icon name="user" size={36} />
+              </div>
+              <h3>Select a Member</h3>
+              <p>Choose an enrolled member from the directory on the left to inspect their attendance standing, points breakdown, and contribution audit trail.</p>
             </div>
           ) : (
             <>
               <div className="engagement-detail-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
-                  <div className="engagement-member-card__avatar" style={{ width: 48, height: 48, fontSize: 'var(--font-size-lg)' }}>
+                  <div className="engagement-member-card__avatar" style={{ width: 50, height: 50, fontSize: 'var(--font-size-base)' }}>
                     {getInitials(selectedMember.member.name)}
                   </div>
                   <div>
-                    <h2 style={{ margin: 0 }}>{selectedMember.member.name}</h2>
-                    <span style={{ color: 'var(--color-text-muted)', fontSize: 'var(--font-size-sm)' }}>
+                    <h2 className="engagement-detail-name">{selectedMember.member.name}</h2>
+                    <span className="engagement-detail-email">
                       {selectedMember.member.email}
                     </span>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
                   <Button variant="secondary" size="sm" onClick={() => navigate(`/engagement/${selectedMember.member.id}`)}>
-                    View Full Profile
+                    <Icon name="external-link" size={14} /> Public Profile
                   </Button>
                   <Button variant="primary" size="sm" onClick={handleAddContribution}>
-                    + Add Contribution
+                    <Icon name="plus" size={14} /> Add Contribution
                   </Button>
                 </div>
               </div>
@@ -195,65 +218,78 @@ export default function ManageEngagement() {
               {/* Stats Grid */}
               <div className="engagement-detail-stats">
                 <div className="engagement-detail-stat">
-                  <span className="engagement-detail-stat__label">Attendance</span>
+                  <span className="engagement-detail-stat__label">Attendance Rate</span>
                   <span className="engagement-detail-stat__value">{selectedMember.attendance.percentage}%</span>
                   <Badge variant={getLevelColor(selectedMember.activityLevel)} size="sm">{selectedMember.activityLevel}</Badge>
                 </div>
                 <div className="engagement-detail-stat">
-                  <span className="engagement-detail-stat__label">Discussion</span>
+                  <span className="engagement-detail-stat__label">Forum Activity</span>
                   <span className="engagement-detail-stat__value">{selectedMember.discussion.meaningfulMessages} msgs</span>
-                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{selectedMember.discussion.activeDays} days</span>
+                  <span className="engagement-detail-stat__sub">{selectedMember.discussion.activeDays} active days</span>
                 </div>
                 <div className="engagement-detail-stat">
-                  <span className="engagement-detail-stat__label">Points</span>
+                  <span className="engagement-detail-stat__label">Merit Points</span>
                   <span className="engagement-detail-stat__value">{selectedMember.contribution.totalPoints}</span>
                   <Badge variant={getLevelColor(selectedMember.contributionLevel)} size="sm">{selectedMember.contributionLevel}</Badge>
                 </div>
                 <div className="engagement-detail-stat">
-                  <span className="engagement-detail-stat__label">Tasks</span>
+                  <span className="engagement-detail-stat__label">Tasks Executed</span>
                   <span className="engagement-detail-stat__value">{selectedMember.contribution.taskCount}</span>
                 </div>
                 <div className="engagement-detail-stat">
-                  <span className="engagement-detail-stat__label">Resources</span>
+                  <span className="engagement-detail-stat__label">Research Pieces</span>
                   <span className="engagement-detail-stat__value">{selectedMember.contribution.resourceCount}</span>
                 </div>
                 <div className="engagement-detail-stat">
-                  <span className="engagement-detail-stat__label">Events</span>
+                  <span className="engagement-detail-stat__label">Events Supported</span>
                   <span className="engagement-detail-stat__value">{selectedMember.contribution.eventOrganizedCount + selectedMember.contribution.eventSupportCount}</span>
                 </div>
               </div>
 
               {/* Contribution History */}
-              <h3 className="section-title" style={{ marginTop: 'var(--space-xl)' }}>Contribution History</h3>
+              <div className="engagement-history-header">
+                <h3 className="engagement-history-title">Verified Contribution History</h3>
+                <span className="engagement-history-count">{memberContribs.length} entries</span>
+              </div>
+
               {loadingContribs ? (
-                <Loading message="Loading..." />
+                <Loading message="Loading contributions..." />
               ) : memberContribs.length === 0 ? (
                 <div className="engagement-empty-contribs">
-                  <p>No contributions recorded yet.</p>
+                  <p>No verified contributions logged for this member yet.</p>
                 </div>
               ) : (
                 <div className="engagement-contrib-list">
-                  {memberContribs.map(c => (
-                    <div key={c.id} className="engagement-contrib-item">
-                      <div className="engagement-contrib-item__icon">{c.categoryIcon}</div>
-                      <div className="engagement-contrib-item__content">
-                        <span className="engagement-contrib-item__title">{c.title}</span>
-                        <span className="engagement-contrib-item__meta">
-                          {c.typeLabel} · {formatDateShort(c.date)} · Recorded by {c.recorder?.name || 'Admin'}
-                        </span>
-                        {c.description && (
-                          <span className="engagement-contrib-item__desc">{c.description}</span>
-                        )}
-                      </div>
-                      <div className="engagement-contrib-item__right">
-                        <span className="timeline-points">+{c.points}</span>
-                        <div className="manage-actions" style={{ marginTop: 'var(--space-xs)' }}>
-                          <Button variant="ghost" size="sm" onClick={() => handleEditContrib(c)}>Edit</Button>
-                          <Button variant="ghost" size="sm" className="text-danger" onClick={() => setDeleteTarget(c)}>Delete</Button>
+                  {memberContribs.map(c => {
+                    const iconName = CATEGORY_ICONS[c.category] || 'document';
+                    return (
+                      <div key={c.id} className="engagement-contrib-item">
+                        <div className="engagement-contrib-item__icon">
+                          <Icon name={iconName} size={18} />
+                        </div>
+                        <div className="engagement-contrib-item__content">
+                          <span className="engagement-contrib-item__title">{c.title}</span>
+                          <span className="engagement-contrib-item__meta">
+                            {c.typeLabel} · {formatDateShort(c.date)} · Logged by {c.recorder?.name || 'Faculty Admin'}
+                          </span>
+                          {c.description && (
+                            <span className="engagement-contrib-item__desc">{c.description}</span>
+                          )}
+                        </div>
+                        <div className="engagement-contrib-item__right">
+                          <span className="timeline-points">+{c.points} pts</span>
+                          <div className="manage-actions" style={{ marginTop: 'var(--space-xs)' }}>
+                            <Button variant="ghost" size="sm" onClick={() => handleEditContrib(c)}>
+                              <Icon name="edit" size={13} /> Edit
+                            </Button>
+                            <Button variant="ghost" size="sm" className="text-danger" onClick={() => setDeleteTarget(c)}>
+                              <Icon name="trash" size={13} /> Delete
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </>
@@ -275,9 +311,9 @@ export default function ManageEngagement() {
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDeleteContrib}
-        title="Delete Contribution"
-        message={`Delete "${deleteTarget?.title}" (+${deleteTarget?.points} pts)? This action will be logged in the audit trail.`}
-        confirmText="Delete"
+        title="Delete Contribution Record"
+        message={`Permanently remove "${deleteTarget?.title}" (+${deleteTarget?.points} pts)? This deletion will be registered in the compliance audit trail.`}
+        confirmText="Delete Record"
         loading={deleting}
       />
     </div>

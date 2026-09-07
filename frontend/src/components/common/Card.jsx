@@ -1,3 +1,4 @@
+import Icon from './Icon';
 import './Card.css';
 
 export default function Card({ children, className = '', hover = true, onClick }) {
@@ -18,7 +19,11 @@ export function CardImage({ src, alt, overlay }) {
         className="card-image__img"
         style={{ backgroundImage: src ? `url(${src})` : undefined }}
       >
-        {!src && <span className="card-image__placeholder">📷</span>}
+        {!src && (
+          <span className="card-image__placeholder">
+            <Icon name="camera" size={28} />
+          </span>
+        )}
       </div>
       {overlay && <div className="card-image__overlay">{overlay}</div>}
     </div>

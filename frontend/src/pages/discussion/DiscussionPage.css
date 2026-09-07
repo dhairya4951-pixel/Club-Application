@@ -1,55 +1,74 @@
+/* ─── Academic Discussion Forum ───────────────────── */
 .discussion-page {
-  max-width: 800px;
+  max-width: 920px;
   margin: 0 auto;
-  padding: 0 var(--space-lg);
   height: calc(100vh - var(--navbar-height) - var(--space-2xl));
+  display: flex;
+  flex-direction: column;
 }
 
 .discussion-container {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
+  background: #FFFFFF;
+  border-radius: var(--radius-lg);
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 .discussion-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   padding: var(--space-lg) var(--space-xl);
   border-bottom: 1px solid var(--color-border);
+  background: #FFFFFF;
+  gap: var(--space-md);
 }
 
-.discussion-header h1 {
-  font-size: var(--font-size-xl);
-  font-weight: 700;
+.discussion-title {
+  font-family: var(--font-serif);
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: 2px;
+  line-height: 1.2;
+}
+
+.discussion-subtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  margin-bottom: 0;
 }
 
 .discussion-count {
-  font-size: var(--font-size-xs);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 600;
   color: var(--color-text-muted);
+  background: var(--color-bg);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  white-space: nowrap;
 }
 
 .discussion-messages {
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-md) 0;
+  background: #FFFFFF;
 }
 
 @media (max-width: 768px) {
   .discussion-page {
-    padding: 0 var(--space-md);
     height: calc(100vh - var(--navbar-height) - var(--space-lg));
   }
-
   .discussion-header {
     padding: var(--space-md) var(--space-lg);
-  }
-
-  .discussion-header h1 {
-    font-size: var(--font-size-lg);
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

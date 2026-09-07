@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { getInitials, formatTime } from '../../utils/helpers';
 import { useAuth } from '../../contexts/AuthContext';
+import Icon from '../common/Icon';
 import './ChatMessage.css';
 
 export default function ChatMessage({ message, onEdit, onDelete }) {
@@ -13,22 +14,17 @@ export default function ChatMessage({ message, onEdit, onDelete }) {
   const editInputRef = useRef(null);
   const actionsRef = useRef(null);
 
-  // Can this user edit this message? (owner only)
   const canEdit = isOwn;
-  // Can this user delete this message? (owner OR admin)
   const canDelete = isOwn || isAdmin;
-  // Should we show the actions menu at all?
   const hasActions = canEdit || canDelete;
 
-  // Focus the edit input when entering edit mode
   useEffect(() => {
     if (editing && editInputRef.current) {
       editInputRef.current.focus();
       editInputRef.current.setSelectionRange(editText.length, editText.length);
     }
-  }, [editing]);
+  }, [editing, editText.length]);
 
-  // Close actions menu when clicking outside
   useEffect(() => {
     if (!showActions) return;
     const handleClickOutside = (e) => {
@@ -92,15 +88,15 @@ export default function ChatMessage({ message, onEdit, onDelete }) {
             </span>
           )}
 
-          {/* Actions menu */}
           {hasActions && (
             <div className="chat-message__actions-wrapper" ref={actionsRef}>
               <button
                 className="chat-message__actions-trigger"
                 onClick={() => setShowActions(prev => !prev)}
                 title="Message actions"
+                aria-label="Message actions"
               >
-                ⋯
+                •••
               </button>
               {showActions && (
                 <div className="chat-message__actions-menu">
@@ -109,7 +105,8 @@ export default function ChatMessage({ message, onEdit, onDelete }) {
                       className="chat-message__action-item"
                       onClick={handleStartEdit}
                     >
-                      ✏️ Edit
+                      <Icon name="edit" size={13} />
+                      <span>Edit</span>
                     </button>
                   )}
                   {canDelete && (
@@ -117,7 +114,8 @@ export default function ChatMessage({ message, onEdit, onDelete }) {
                       className="chat-message__action-item chat-message__action-item--danger"
                       onClick={handleDelete}
                     >
-                      🗑️ Delete
+                      <Icon name="trash" size={13} />
+                      <span>Delete</span>
                     </button>
                   )}
                 </div>
@@ -126,13 +124,12 @@ export default function ChatMessage({ message, onEdit, onDelete }) {
           )}
         </div>
 
-        {/* Message body — normal or edit mode */}
         {editing ? (
           <div className="chat-message__edit">
             <input
               ref={editInputRef}
               type="text"
-              className="chat-message__edit-input"
+              className="chat-message__edit-input form-input"
               value={editText}
               onChange={(e) => setEditText(e.target.value)}
               onKeyDown={handleEditKeyDown}
@@ -140,14 +137,14 @@ export default function ChatMessage({ message, onEdit, onDelete }) {
             />
             <div className="chat-message__edit-actions">
               <button
-                className="chat-message__edit-btn chat-message__edit-btn--save"
+                className="chat-message__edit-btn chat-message__edit-btn--save btn btn--primary btn--sm"
                 onClick={handleEditSubmit}
                 disabled={!editText.trim()}
               >
                 Save
               </button>
               <button
-                className="chat-message__edit-btn chat-message__edit-btn--cancel"
+                className="chat-message__edit-btn chat-message__edit-btn--cancel btn btn--secondary btn--sm"
                 onClick={() => {
                   setEditing(false);
                   setEditText(message.message);

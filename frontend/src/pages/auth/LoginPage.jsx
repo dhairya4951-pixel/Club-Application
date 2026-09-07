@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../../components/common/Button';
 import FormField from '../../components/common/FormField';
+import Icon from '../../components/common/Icon';
 import './LoginPage.css';
 
 export default function LoginPage() {
@@ -33,59 +34,71 @@ export default function LoginPage() {
 
   return (
     <div className="login-page">
-      <div className="login-bg" />
+      <div className="login-backdrop" />
       <div className="login-container animate-fade-in">
-        <div className="login-header">
-          <img src="/logo.png" alt="Logo" className="login-logo-img" />
-          <h1 className="login-title">Public Policy Club</h1>
-          <p className="login-subtitle">Club Management Platform</p>
-        </div>
-
-        <form className="login-form" onSubmit={handleSubmit}>
-          <h2 className="login-form-title">Welcome Back</h2>
-          <p className="login-form-desc">Sign in to your account</p>
-
-          {error && (
-            <div className="login-error">
-              <span>⚠️</span> {error}
+        <form className="login-card" onSubmit={handleSubmit}>
+          {/* Card Brand Header */}
+          <div className="login-card__brand">
+            <div className="login-card__logo-wrap">
+              <img src="/logo.png" alt="Public Policy Club Logo" className="login-card__logo-img" />
             </div>
-          )}
+            <h1 className="login-card__title">Public Policy Club</h1>
+            <p className="login-card__subtitle">Ideas · Dialogue · Action</p>
+          </div>
 
-          <FormField
-            label="Email"
-            name="email"
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder="you@club.edu"
-            required
-          />
+          <div className="login-card__divider" />
 
-          <FormField
-            label="Password"
-            name="password"
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            placeholder="Enter your password"
-            required
-          />
+          {/* Form Content */}
+          <div className="login-card__body">
+            <div className="login-card__heading">
+              <h2 className="login-card__heading-title">Institutional Portal Access</h2>
+              <p className="login-card__heading-desc">Sign in with your registered club credentials</p>
+            </div>
 
-          <Button
-            type="submit"
-            variant="primary"
-            size="lg"
-            fullWidth
-            loading={loading}
-          >
-            Sign In
-          </Button>
+            {error && (
+              <div className="login-error">
+                <Icon name="alert-circle" size={16} />
+                <span>{error}</span>
+              </div>
+            )}
 
-          <div className="login-hint">
-            <p><strong>Demo Accounts:</strong></p>
-            <p>Teacher: <code>drpriya@club.edu</code> / <code>admin123</code></p>
-            <p>President: <code>dhairya@club.edu</code> / <code>member123</code></p>
-            <p>Member: <code>karan@club.edu</code> / <code>member123</code></p>
+            <FormField
+              label="Email Address"
+              name="email"
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="name@university.edu"
+              required
+            />
+
+            <FormField
+              label="Password"
+              name="password"
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="••••••••••••"
+              required
+            />
+
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              fullWidth
+              loading={loading}
+              className="login-submit-btn"
+            >
+              <span>Sign In to Portal</span>
+              <Icon name="arrow-right" size={15} />
+            </Button>
+          </div>
+
+          {/* Card Footer Security Watermark */}
+          <div className="login-card__footer">
+            <Icon name="shield" size={13} />
+            <span>Authorized Student & Faculty Access Only</span>
           </div>
         </form>
       </div>

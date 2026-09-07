@@ -1,6 +1,53 @@
-.nowrap { white-space: nowrap; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
-@media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } }
+.manage-activities-page {
+  padding-bottom: var(--space-4xl);
+}
+
+.manage-activities-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.activity-table-date {
+  display: block;
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+}
+
+.activity-table-time {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.activity-category-pill {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: #F1F5F9;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  display: inline-block;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* Activity cover image thumbnails in table */
 .activity-cell {
@@ -10,18 +57,32 @@
 }
 
 .activity-cell__thumb {
-  width: 48px;
-  height: 36px;
+  width: 52px;
+  height: 38px;
   border-radius: var(--radius-sm);
   object-fit: cover;
   flex-shrink: 0;
   border: 1px solid var(--color-border);
 }
 
+.activity-cell__thumb-placeholder {
+  width: 52px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: #F1F5F9;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .activity-mobile-thumb {
   width: 100%;
-  height: 120px;
+  height: 140px;
   border-radius: var(--radius-sm);
   object-fit: cover;
   margin-bottom: var(--space-sm);
+  border: 1px solid var(--color-border);
 }

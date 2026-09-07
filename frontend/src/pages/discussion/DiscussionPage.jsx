@@ -6,6 +6,7 @@ import ChatInput from '../../components/chat/ChatInput';
 import Loading from '../../components/common/Loading';
 import EmptyState from '../../components/common/EmptyState';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import Icon from '../../components/common/Icon';
 import './DiscussionPage.css';
 
 export default function DiscussionPage() {
@@ -23,7 +24,6 @@ export default function DiscussionPage() {
   useEffect(() => {
     fetchMessages();
 
-    // Subscribe to realtime updates (only if supabase client is available)
     if (!supabase) return;
 
     const channel = supabase
@@ -97,19 +97,30 @@ export default function DiscussionPage() {
   if (loading) return <Loading fullPage message="Loading discussion..." />;
 
   return (
-    <div className="discussion-page">
-      <div className="discussion-container">
+    <div className="container discussion-page">
+      <div className="discussion-container card-surface">
         <div className="discussion-header">
-          <h1>💬 Club Discussion</h1>
-          <span className="discussion-count">{messages.length} messages</span>
+          <div>
+            <span className="eyebrow-label">Forum</span>
+            <h1 className="discussion-title">Club Discussion</h1>
+            <p className="discussion-subtitle">
+              Share policy perspectives, research questions, and collaborate with club members.
+            </p>
+          </div>
+          <div className="discussion-header__right">
+            <span className="discussion-count">
+              <Icon name="message" size={14} />
+              <span>{messages.length} messages</span>
+            </span>
+          </div>
         </div>
 
         <div className="discussion-messages">
           {messages.length === 0 ? (
             <EmptyState
-              icon="💬"
-              title="No messages yet"
-              message="Start the conversation!"
+              icon="message"
+              title="No discussion yet"
+              message="Start the conversation by sharing a policy question or topic."
             />
           ) : (
             <>

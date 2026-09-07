@@ -1,8 +1,10 @@
+/* ─── Academic Modal System ───────────────────────── */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: hsla(0, 0%, 0%, 0.7);
+  background: rgba(11, 30, 54, 0.45);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11,7 +13,7 @@
 }
 
 .modal-content {
-  background: var(--color-surface);
+  background: #FFFFFF;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   max-height: 90vh;
@@ -19,10 +21,10 @@
   box-shadow: var(--shadow-lg);
 }
 
-.modal-content--sm { width: 100%; max-width: 420px; }
-.modal-content--md { width: 100%; max-width: 560px; }
-.modal-content--lg { width: 100%; max-width: 720px; }
-.modal-content--xl { width: 100%; max-width: 900px; }
+.modal-content--sm { width: 100%; max-width: 440px; }
+.modal-content--md { width: 100%; max-width: 580px; }
+.modal-content--lg { width: 100%; max-width: 740px; }
+.modal-content--xl { width: 100%; max-width: 920px; }
 
 .modal-header {
   display: flex;
@@ -30,26 +32,36 @@
   justify-content: space-between;
   padding: var(--space-lg) var(--space-xl);
   border-bottom: 1px solid var(--color-border);
+  background: #FFFFFF;
+  position: sticky;
+  top: 0;
+  z-index: 5;
 }
 
 .modal-title {
+  font-family: var(--font-serif);
   font-size: var(--font-size-xl);
-  font-weight: 700;
+  font-weight: 600;
+  color: var(--color-primary);
+  letter-spacing: -0.01em;
 }
 
 .modal-close {
   background: none;
   border: none;
-  color: var(--color-text-secondary);
-  font-size: 1.2rem;
-  padding: var(--space-sm);
+  color: var(--color-text-muted);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: var(--radius-sm);
   transition: all var(--transition-fast);
-  line-height: 1;
 }
+
 .modal-close:hover {
-  background: var(--color-surface-hover);
-  color: var(--color-text);
+  background: var(--color-bg-alt);
+  color: var(--color-primary);
 }
 
 .modal-body {
@@ -58,9 +70,12 @@
 
 @media (max-width: 768px) {
   .modal-content {
-    max-height: 95vh;
-    border-radius: var(--radius-md);
+    max-height: 94vh;
   }
-  .modal-header { padding: var(--space-md) var(--space-lg); }
-  .modal-body { padding: var(--space-lg); }
+  .modal-header {
+    padding: var(--space-md) var(--space-lg);
+  }
+  .modal-body {
+    padding: var(--space-lg);
+  }
 }

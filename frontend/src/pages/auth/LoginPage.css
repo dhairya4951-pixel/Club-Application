@@ -1,113 +1,163 @@
+/* ─── Academic Login Portal ───────────────────────── */
 .login-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  padding: var(--space-lg);
+  padding: var(--space-xl) var(--space-md);
+  background: var(--color-primary-dark);
 }
 
-.login-bg {
+.login-backdrop {
   position: fixed;
   inset: 0;
-  background:
-    radial-gradient(ellipse at 20% 50%, hsla(230, 65%, 30%, 0.4), transparent 60%),
-    radial-gradient(ellipse at 80% 20%, hsla(160, 60%, 25%, 0.3), transparent 50%),
-    var(--color-bg);
+  background-image: 
+    linear-gradient(135deg, rgba(11, 30, 54, 0.72) 0%, rgba(13, 34, 64, 0.85) 100%),
+    url('/campus-bg.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
   z-index: 0;
+  filter: saturate(1.1);
 }
 
 .login-container {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 420px;
+  max-width: 410px;
+  margin: 0 auto;
 }
 
-.login-header {
+/* Unified Portrait Credential Card */
+.login-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 24px 48px -12px rgba(11, 30, 54, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Brand Section at the top of the card */
+.login-card__brand {
   text-align: center;
-  margin-bottom: var(--space-2xl);
+  padding: 32px 28px 20px;
+  background: linear-gradient(180deg, #FAFCFE 0%, #FFFFFF 100%);
 }
 
-.login-logo {
-  display: inline-block;
-  font-size: 2.5rem;
-  color: var(--color-primary-light);
-  margin-bottom: var(--space-sm);
+.login-card__logo-wrap {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(13, 34, 64, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.login-logo-img {
-  height: 64px;
+.login-card__logo-img {
+  height: 34px;
   width: auto;
-  margin-bottom: var(--space-sm);
-  display: inline-block;
 }
 
-.login-title {
-  font-size: var(--font-size-3xl);
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--color-primary-light), var(--color-accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.login-subtitle {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  margin-top: var(--space-xs);
-}
-
-.login-form {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  padding: var(--space-2xl);
-}
-
-.login-form-title {
-  font-size: var(--font-size-xl);
+.login-card__title {
+  font-family: var(--font-serif);
+  font-size: 1.65rem;
   font-weight: 700;
-  margin-bottom: var(--space-xs);
+  color: var(--color-primary);
+  letter-spacing: -0.01em;
+  margin-bottom: 3px;
+  line-height: 1.2;
 }
 
-.login-form-desc {
-  color: var(--color-text-secondary);
+.login-card__subtitle {
+  color: #64748B;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+/* Subtle separator */
+.login-card__divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #E2E8F0 20%, #E2E8F0 80%, transparent);
+}
+
+/* Form Body */
+.login-card__body {
+  padding: 24px 28px 28px;
+}
+
+.login-card__heading {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.login-card__heading-title {
+  font-family: var(--font-sans);
   font-size: var(--font-size-sm);
-  margin-bottom: var(--space-xl);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-primary);
+  margin-bottom: 3px;
+}
+
+.login-card__heading-desc {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
 }
 
 .login-error {
   background: var(--color-error-bg);
-  color: var(--color-error);
-  padding: var(--space-md);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  margin-bottom: var(--space-lg);
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-}
-
-.login-hint {
-  margin-top: var(--space-xl);
-  padding: var(--space-md);
-  background: var(--color-bg);
+  color: var(--color-error-text);
+  border: 1px solid var(--color-error-border);
+  padding: 10px 14px;
   border-radius: var(--radius-md);
   font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
+  margin-bottom: var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
 }
 
-.login-hint code {
-  background: var(--color-surface-hover);
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-size: 0.7rem;
+.login-submit-btn {
+  margin-top: 8px;
+  height: 46px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Footer Security Tag */
+.login-card__footer {
+  padding: 12px 20px;
+  background: #F8FAFC;
+  border-top: 1px solid #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #94A3B8;
+  letter-spacing: 0.02em;
 }
 
 @media (max-width: 480px) {
-  .login-form {
-    padding: var(--space-xl);
-    border-radius: var(--radius-lg);
+  .login-card__brand {
+    padding: 24px 20px 16px;
+  }
+  .login-card__body {
+    padding: 20px 20px 24px;
   }
 }
+

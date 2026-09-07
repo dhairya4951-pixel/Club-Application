@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { getInitials, getPositionLabel } from '../../utils/helpers';
+import Icon from '../common/Icon';
 import { useState } from 'react';
 import './Navbar.css';
 
@@ -16,21 +17,21 @@ export default function Navbar() {
   };
 
   const memberLinks = [
-    { to: '/', label: 'Home', icon: '🏠' },
-    { to: '/activities', label: 'Activities', icon: '📅' },
-    { to: '/members', label: 'Members', icon: '👥' },
-    { to: '/discussion', label: 'Discussion', icon: '💬' },
-    { to: '/my-activities', label: 'My Activities', icon: '📊' },
-    { to: '/my-engagement', label: 'My Engagement', icon: '⭐' },
+    { to: '/', label: 'Home', icon: 'home' },
+    { to: '/activities', label: 'Activities', icon: 'calendar' },
+    { to: '/members', label: 'Members', icon: 'users' },
+    { to: '/discussion', label: 'Discussion', icon: 'message' },
+    { to: '/my-activities', label: 'My Activities', icon: 'chart' },
+    { to: '/my-engagement', label: 'My Engagement', icon: 'star' },
   ];
 
   const adminLinks = [
-    { to: '/admin', label: 'Dashboard', icon: '📊' },
-    { to: '/admin/members', label: 'Manage Members', icon: '👤' },
-    { to: '/admin/activities', label: 'Manage Activities', icon: '📝' },
-    { to: '/admin/attendance', label: 'Manage Attendance', icon: '✅' },
-    { to: '/admin/engagement', label: 'Engagement', icon: '⭐' },
-    { to: '/admin/discussion', label: 'Manage Discussion', icon: '🛡️' },
+    { to: '/admin', label: 'Dashboard', icon: 'chart' },
+    { to: '/admin/members', label: 'Manage Members', icon: 'users' },
+    { to: '/admin/activities', label: 'Manage Activities', icon: 'calendar' },
+    { to: '/admin/attendance', label: 'Manage Attendance', icon: 'check-circle' },
+    { to: '/admin/engagement', label: 'Engagement', icon: 'star' },
+    { to: '/admin/discussion', label: 'Manage Discussion', icon: 'shield' },
   ];
 
   const positionLabel = getPositionLabel(user?.position, user?.role);
@@ -40,7 +41,9 @@ export default function Navbar() {
       <nav className="navbar">
         <div className="navbar__inner">
           <NavLink to="/" className="navbar__brand">
-            <img src="/logo.png" alt="Logo" className="navbar__logo-img" />
+            <div className="navbar__logo-wrap">
+              <img src="/logo.png" alt="Logo" className="navbar__logo-img" />
+            </div>
             <span className="navbar__title">Public Policy Club</span>
           </NavLink>
 
@@ -58,16 +61,14 @@ export default function Navbar() {
             {isAdmin && (
               <div className="navbar__divider" />
             )}
-            {isAdmin && adminLinks.slice(0, 1).map(link => (
+            {isAdmin && (
               <NavLink
-                key={link.to}
-                to={link.to}
-                end
+                to="/admin"
                 className={({ isActive }) => `navbar__link navbar__link--admin ${isActive ? 'navbar__link--active' : ''}`}
               >
                 Admin
               </NavLink>
-            ))}
+            )}
           </div>
 
           <div className="navbar__right">
@@ -76,20 +77,25 @@ export default function Navbar() {
                 {getInitials(user?.name)}
               </div>
               <span className="navbar__user-name hide-mobile">{user?.name?.split(' ')[0]}</span>
+              <span className="navbar__chevron hide-mobile">
+                <Icon name="chevron-down" size={13} />
+              </span>
             </div>
 
             {profileOpen && (
-              <div className="navbar__dropdown" onClick={() => setProfileOpen(false)}>
+              <div className="navbar__dropdown card-surface" onClick={() => setProfileOpen(false)}>
                 <div className="navbar__dropdown-header">
                   <strong>{user?.name}</strong>
                   <span className="navbar__dropdown-role">{positionLabel}</span>
                 </div>
                 <div className="navbar__dropdown-divider" />
                 <NavLink to="/profile" className="navbar__dropdown-item">
-                  👤 Profile
+                  <Icon name="user" size={15} />
+                  <span>Profile</span>
                 </NavLink>
                 <button className="navbar__dropdown-item navbar__dropdown-item--danger" onClick={handleLogout}>
-                  🚪 Logout
+                  <Icon name="logout" size={15} />
+                  <span>Logout</span>
                 </button>
               </div>
             )}
@@ -97,28 +103,30 @@ export default function Navbar() {
             <button
               className="navbar__hamburger hide-desktop"
               onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label="Menu"
+              aria-label="Toggle navigation menu"
             >
-              <span className={`hamburger-line ${mobileOpen ? 'open' : ''}`} />
-              <span className={`hamburger-line ${mobileOpen ? 'open' : ''}`} />
-              <span className={`hamburger-line ${mobileOpen ? 'open' : ''}`} />
+              <Icon name={mobileOpen ? 'close' : 'menu'} size={22} />
             </button>
           </div>
         </div>
       </nav>
 
-      {/* Mobile menu */}
+      {/* Mobile Menu Drawer */}
       {mobileOpen && (
         <div className="mobile-overlay" onClick={() => setMobileOpen(false)}>
           <div className="mobile-menu animate-slide-in" onClick={e => e.stopPropagation()}>
             <div className="mobile-menu__header">
-              <img src="/logo.png" alt="Logo" className="navbar__logo-img" />
+              <div className="navbar__logo-wrap">
+                <img src="/logo.png" alt="Logo" className="navbar__logo-img" />
+              </div>
               <span className="navbar__title">Public Policy Club</span>
-              <button className="mobile-menu__close" onClick={() => setMobileOpen(false)}>✕</button>
+              <button className="mobile-menu__close" onClick={() => setMobileOpen(false)} aria-label="Close menu">
+                <Icon name="x" size={20} />
+              </button>
             </div>
 
             <div className="mobile-menu__section">
-              <span className="mobile-menu__label">Menu</span>
+              <span className="mobile-menu__label">Main Menu</span>
               {memberLinks.map(link => (
                 <NavLink
                   key={link.to}
@@ -127,15 +135,15 @@ export default function Navbar() {
                   className={({ isActive }) => `mobile-menu__link ${isActive ? 'mobile-menu__link--active' : ''}`}
                   onClick={() => setMobileOpen(false)}
                 >
-                  <span>{link.icon}</span>
-                  {link.label}
+                  <Icon name={link.icon} size={17} />
+                  <span>{link.label}</span>
                 </NavLink>
               ))}
             </div>
 
             {isAdmin && (
               <div className="mobile-menu__section">
-                <span className="mobile-menu__label">Admin</span>
+                <span className="mobile-menu__label">Administration</span>
                 {adminLinks.map(link => (
                   <NavLink
                     key={link.to}
@@ -144,8 +152,8 @@ export default function Navbar() {
                     className={({ isActive }) => `mobile-menu__link mobile-menu__link--admin ${isActive ? 'mobile-menu__link--active' : ''}`}
                     onClick={() => setMobileOpen(false)}
                   >
-                    <span>{link.icon}</span>
-                    {link.label}
+                    <Icon name={link.icon} size={17} />
+                    <span>{link.label}</span>
                   </NavLink>
                 ))}
               </div>
@@ -153,10 +161,12 @@ export default function Navbar() {
 
             <div className="mobile-menu__footer">
               <NavLink to="/profile" className="mobile-menu__link" onClick={() => setMobileOpen(false)}>
-                <span>👤</span> Profile
+                <Icon name="user" size={17} />
+                <span>Profile</span>
               </NavLink>
               <button className="mobile-menu__link mobile-menu__link--danger" onClick={handleLogout}>
-                <span>🚪</span> Logout
+                <Icon name="logout" size={17} />
+                <span>Logout</span>
               </button>
             </div>
           </div>

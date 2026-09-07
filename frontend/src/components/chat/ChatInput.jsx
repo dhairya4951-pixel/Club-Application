@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Icon from '../common/Icon';
 import './ChatInput.css';
 
 export default function ChatInput({ onSend, disabled = false }) {
@@ -22,20 +23,22 @@ export default function ChatInput({ onSend, disabled = false }) {
     <form className="chat-input" onSubmit={handleSubmit}>
       <input
         type="text"
-        className="chat-input__field"
+        className="chat-input__field form-input"
         value={text}
         onChange={e => setText(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Type a message..."
+        placeholder="Type your perspective or question..."
         disabled={disabled}
         maxLength={2000}
       />
       <button
         type="submit"
-        className="chat-input__send"
+        className="chat-input__send btn btn--primary btn--md"
         disabled={!text.trim() || disabled}
+        aria-label="Send message"
       >
-        Send
+        <span>Send</span>
+        <Icon name="arrow-right" size={15} />
       </button>
     </form>
   );
