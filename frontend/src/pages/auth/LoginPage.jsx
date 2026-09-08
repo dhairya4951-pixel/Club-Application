@@ -43,7 +43,7 @@ export default function LoginPage() {
               <img src="/logo.png" alt="Public Policy Club Logo" className="login-card__logo-img" />
             </div>
             <h1 className="login-card__title">Public Policy Club</h1>
-            <p className="login-card__subtitle">Ideas · Dialogue · Action</p>
+            <p className="login-card__subtitle">Research · Analysis · Awareness · Application · Reach</p>
           </div>
 
           <div className="login-card__divider" />

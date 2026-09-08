@@ -53,7 +53,7 @@ export default function HomePage() {
             <div className="home-hero__content animate-fade-in">
               <span className="eyebrow-label eyebrow-label--hero">Public Policy Club</span>
               <h1 className="home-hero__title">
-                Ideas. Dialogue. Action.
+                Research. Analysis. Awareness. Application. Reach.
               </h1>
               <p className="home-hero__desc">
                 A community for students exploring policy, governance and civic thinking through rigorous debate and collaborative initiatives.
