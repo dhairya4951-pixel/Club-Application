@@ -30,6 +30,16 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 
+// ─── Server-Timing Header (for production debugging) ─────
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    res.setHeader('Server-Timing', `total;dur=${duration}`);
+  });
+  next();
+});
+
 // ─── API Routes ──────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/members', memberRoutes);

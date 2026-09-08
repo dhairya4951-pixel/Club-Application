@@ -108,11 +108,14 @@ function computeDiscussionStats(memberId, messages) {
 // ─── Engagement Summary ──────────────────────────────────
 
 async function getEngagementSummary(memberId) {
-  const data = await fetchEngagementData(memberId);
+  // Run data fetch and contribution stats in parallel (they are independent)
+  const [data, contributionStats] = await Promise.all([
+    fetchEngagementData(memberId),
+    contributionService.getStats(memberId),
+  ]);
   
   const attendanceStats = computeAttendanceStats(memberId, data.activities, data.attendance);
   const discussionStats = computeDiscussionStats(memberId, data.messages);
-  const contributionStats = await contributionService.getStats(memberId);
 
   const activityLevel = attendanceStats.band;
   const contributionLevel = contributionStats.level;
