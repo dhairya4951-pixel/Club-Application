@@ -22,27 +22,53 @@ export default function MyEngagementPage() {
   const [engagement, setEngagement] = useState(null);
   const [timeline, setTimeline] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [engRes, tlRes] = await Promise.allSettled([
+        engagementService.getMyEngagement(),
+        engagementService.getTimeline(user.id),
+      ]);
+
+      if (engRes.status === 'fulfilled') {
+        setEngagement(engRes.value);
+      } else {
+        console.error('Failed to load engagement:', engRes.reason);
+      }
+
+      if (tlRes.status === 'fulfilled') {
+        setTimeline(tlRes.value);
+      } else {
+        console.error('Failed to load timeline:', tlRes.reason);
+      }
+
+      if (engRes.status === 'rejected') {
+        setError(engRes.reason?.message || 'Unable to load engagement records. Please check your connection.');
+      }
+    } catch (err) {
+      console.error('Failed to load engagement data:', err);
+      setError(err.message || 'Unable to load engagement data.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const [engData, tlData] = await Promise.all([
-          engagementService.getMyEngagement(),
-          engagementService.getTimeline(user.id),
-        ]);
-        setEngagement(engData);
-        setTimeline(tlData);
-      } catch (err) {
-        console.error('Failed to load engagement:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
     if (user?.id) fetchData();
   }, [user?.id]);
 
   if (loading) return <Loading fullPage message="Loading engagement analysis..." />;
-  if (!engagement) return <EmptyState icon="chart" title="No engagement data" message="Unable to load engagement records at this time." />;
+  if (error && !engagement) {
+    return (
+      <div className="container engagement-page">
+        <EmptyState icon="alert" title="Engagement Data Unavailable" message={error} />
+      </div>
+    );
+  }
+  if (!engagement) return <EmptyState icon="chart" title="No engagement data" message="No engagement metrics recorded yet." />;
 
   const { attendance, discussion, contribution, activityLevel, contributionLevel, overallLabel } = engagement;
 

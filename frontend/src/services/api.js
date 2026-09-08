@@ -11,13 +11,26 @@
 
 const API_BASE = '/api';
 
-let getToken = () => null;
+// Fallback to sessionStorage so requests immediately after refresh or mount are authenticated
+let getToken = () => {
+  if (typeof window !== 'undefined') {
+    return sessionStorage.getItem('club_token');
+  }
+  return null;
+};
 
 /**
  * Register the token getter (called by AuthContext on init)
  */
 export function setTokenGetter(fn) {
-  getToken = fn;
+  getToken = () => {
+    const custom = fn?.();
+    if (custom) return custom;
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('club_token');
+    }
+    return null;
+  };
 }
 
 /**

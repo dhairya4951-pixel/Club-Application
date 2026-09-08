@@ -14,25 +14,25 @@ const { supabase, SUPABASE_READY } = require('../config/supabase');
  */
 async function getMemberAttendance(memberId) {
   if (SUPABASE_READY) {
-    // We join the attendance table with the activities table
+    // We left join the attendance table with the activities table
     const { data: records, error } = await supabase
       .from('attendance')
       .select(`
         *,
-        activity:activities!inner (
+        activity:activities (
           id, title, date, category, status
         )
       `)
       .eq('member_id', memberId)
-      .eq('activity.status', 'completed')
       .order('updated_at', { ascending: false });
 
     if (error) throw new Error(error.message);
 
     // Sort by activity date descending
-    records.sort((a, b) => {
-      const dateA = a.activity?.date || '';
-      const dateB = b.activity?.date || '';
+    const safeRecords = records || [];
+    safeRecords.sort((a, b) => {
+      const dateA = a.activity?.date || a.updated_at || '';
+      const dateB = b.activity?.date || b.updated_at || '';
       return new Date(dateB) - new Date(dateA);
     });
 

@@ -39,21 +39,24 @@ async function fetchEngagementData(memberId = null) {
     };
   }
 
-  // Fetch all activities
-  const { data: dbActivities } = await supabase.from('activities').select('id, title, status, date');
-  
-  // Fetch attendance
   let attQuery = supabase.from('attendance').select('activity_id, member_id, status, updated_at');
   if (memberId) attQuery = attQuery.eq('member_id', memberId);
-  const { data: dbAttendance } = await attQuery;
 
-  // Fetch messages
   let msgQuery = supabase.from('messages').select('sender_id, message, created_at');
   if (memberId) msgQuery = msgQuery.eq('sender_id', memberId);
-  const { data: dbMessages } = await msgQuery;
 
-  // Fetch users
-  const { data: dbUsers } = await supabase.from('profiles').select('id, name, email, role, position, profile_image');
+  // Execute independent database queries concurrently in parallel
+  const [
+    { data: dbActivities },
+    { data: dbAttendance },
+    { data: dbMessages },
+    { data: dbUsers }
+  ] = await Promise.all([
+    supabase.from('activities').select('id, title, status, date'),
+    attQuery,
+    msgQuery,
+    supabase.from('profiles').select('id, name, email, role, position, profile_image')
+  ]);
 
   return {
     activities: dbActivities ? dbActivities.map(a => ({ id: a.id, title: a.title, status: a.status, date: a.date })) : [],

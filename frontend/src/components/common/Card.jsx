@@ -15,16 +15,22 @@ export default function Card({ children, className = '', hover = true, onClick }
 export function CardImage({ src, alt, overlay }) {
   return (
     <div className="card-image">
-      <div
-        className="card-image__img"
-        style={{ backgroundImage: src ? `url(${src})` : undefined }}
-      >
-        {!src && (
+      {src ? (
+        <img
+          src={src}
+          alt={alt || 'Card image'}
+          loading="lazy"
+          decoding="async"
+          className="card-image__img"
+          style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+        />
+      ) : (
+        <div className="card-image__img">
           <span className="card-image__placeholder">
             <Icon name="camera" size={28} />
           </span>
-        )}
-      </div>
+        </div>
+      )}
       {overlay && <div className="card-image__overlay">{overlay}</div>}
     </div>
   );

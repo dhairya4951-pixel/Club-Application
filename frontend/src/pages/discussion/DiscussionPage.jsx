@@ -12,6 +12,7 @@ import './DiscussionPage.css';
 export default function DiscussionPage() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [sending, setSending] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -19,6 +20,19 @@ export default function DiscussionPage() {
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const fetchMessages = async () => {
+    try {
+      const data = await messageService.getAll();
+      setMessages(data || []);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to load messages:', err);
+      setError(err.message || 'Failed to load messages. Please check your connection.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -37,21 +51,6 @@ export default function DiscussionPage() {
       supabase.removeChannel(channel);
     };
   }, []);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  async function fetchMessages() {
-    try {
-      const data = await messageService.getAll();
-      setMessages(data);
-    } catch (err) {
-      console.error('Failed to load messages:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   async function handleSend(text) {
     setSending(true);
@@ -116,7 +115,13 @@ export default function DiscussionPage() {
         </div>
 
         <div className="discussion-messages">
-          {messages.length === 0 ? (
+          {error ? (
+            <EmptyState
+              icon="alert"
+              title="Unable to Load Discussion"
+              message={error}
+            />
+          ) : messages.length === 0 ? (
             <EmptyState
               icon="message"
               title="No discussion yet"

@@ -1,25 +1,34 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ProtectedRoute from './routes/ProtectedRoute';
 import AdminRoute from './routes/AdminRoute';
 import PageLayout from './components/layout/PageLayout';
+import Loading from './components/common/Loading';
+
+// Core pages (loaded directly for fast initial paint)
 import LoginPage from './pages/auth/LoginPage';
 import HomePage from './pages/home/HomePage';
-import ActivitiesPage from './pages/activities/ActivitiesPage';
-import ActivityDetailPage from './pages/activities/ActivityDetailPage';
-import MembersPage from './pages/members/MembersPage';
-import DiscussionPage from './pages/discussion/DiscussionPage';
-import ProfilePage from './pages/profile/ProfilePage';
-import MyAttendancePage from './pages/attendance/MyAttendancePage';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import ManageMembers from './pages/admin/ManageMembers';
-import ManageActivities from './pages/admin/ManageActivities';
-import ManageAttendance from './pages/admin/ManageAttendance';
-import ActivityAttendancePage from './pages/admin/ActivityAttendancePage';
-import ManageDiscussion from './pages/admin/ManageDiscussion';
-import ManageEngagement from './pages/admin/ManageEngagement';
-import MyEngagementPage from './pages/engagement/MyEngagementPage';
-import MemberEngagementPage from './pages/engagement/MemberEngagementPage';
+
+// Route-level code splitting for secondary & admin pages
+const ActivitiesPage = lazy(() => import('./pages/activities/ActivitiesPage'));
+const ActivityDetailPage = lazy(() => import('./pages/activities/ActivityDetailPage'));
+const MembersPage = lazy(() => import('./pages/members/MembersPage'));
+const DiscussionPage = lazy(() => import('./pages/discussion/DiscussionPage'));
+const ProfilePage = lazy(() => import('./pages/profile/ProfilePage'));
+const MyAttendancePage = lazy(() => import('./pages/attendance/MyAttendancePage'));
+const MyEngagementPage = lazy(() => import('./pages/engagement/MyEngagementPage'));
+const MemberEngagementPage = lazy(() => import('./pages/engagement/MemberEngagementPage'));
+
+// Admin pages
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const ManageMembers = lazy(() => import('./pages/admin/ManageMembers'));
+const ManageActivities = lazy(() => import('./pages/admin/ManageActivities'));
+const ManageAttendance = lazy(() => import('./pages/admin/ManageAttendance'));
+const ActivityAttendancePage = lazy(() => import('./pages/admin/ActivityAttendancePage'));
+const ManageDiscussion = lazy(() => import('./pages/admin/ManageDiscussion'));
+const ManageEngagement = lazy(() => import('./pages/admin/ManageEngagement'));
+
 import './App.css';
 
 function AppRoutes() {
@@ -84,6 +93,10 @@ function AppRoutes() {
         <AdminRoute><PageLayout><ManageEngagement /></PageLayout></AdminRoute>
       } />
 
+      {/* Route Aliases */}
+      <Route path="/attendance" element={<Navigate to="/my-activities" replace />} />
+      <Route path="/engagement" element={<Navigate to="/my-engagement" replace />} />
+
       {/* Catch all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
@@ -94,7 +107,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
+        <Suspense fallback={<Loading fullPage message="Loading..." />}>
+          <AppRoutes />
+        </Suspense>
       </AuthProvider>
     </BrowserRouter>
   );

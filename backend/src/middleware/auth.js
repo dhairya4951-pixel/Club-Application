@@ -25,6 +25,33 @@ const { hasAdminAccess, isTeacherAdmin } = require('../models/User');
 
 const SUPABASE_READY = !!supabase;
 
+// In-memory token cache (60s TTL) to prevent repeated remote Supabase roundtrips on concurrent requests
+const userTokenCache = new Map();
+const CACHE_TTL_MS = 60 * 1000;
+
+function getCachedProfile(token) {
+  const cached = userTokenCache.get(token);
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.profile;
+  }
+  userTokenCache.delete(token);
+  return null;
+}
+
+function setCachedProfile(token, profile) {
+  userTokenCache.set(token, {
+    profile,
+    expiresAt: Date.now() + CACHE_TTL_MS,
+  });
+  // Periodic cleanup if map grows
+  if (userTokenCache.size > 100) {
+    const now = Date.now();
+    for (const [k, v] of userTokenCache.entries()) {
+      if (now >= v.expiresAt) userTokenCache.delete(k);
+    }
+  }
+}
+
 // ─── Core JWT verifier ───────────────────────────────────────
 
 async function verifyAndAttachUser(req, res, next) {
@@ -37,11 +64,19 @@ async function verifyAndAttachUser(req, res, next) {
   const token = authHeader.split(' ')[1];
 
   if (SUPABASE_READY) {
+    // Check in-memory cache first for instant validation
+    const cachedProfile = getCachedProfile(token);
+    if (cachedProfile) {
+      req.user = cachedProfile;
+      return next();
+    }
+
     // ── Supabase path ────────────────────────────────────────
     // getUser() validates the JWT against Supabase Auth, handles expiry, etc.
     const { data: { user: authUser }, error } = await supabase.auth.getUser(token);
 
     if (error || !authUser) {
+      userTokenCache.delete(token);
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
 
@@ -56,6 +91,7 @@ async function verifyAndAttachUser(req, res, next) {
       return res.status(401).json({ error: 'User profile not found' });
     }
 
+    setCachedProfile(token, profile);
     req.user = profile;
     return next();
   }

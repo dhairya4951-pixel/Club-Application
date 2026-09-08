@@ -10,24 +10,46 @@ import './MyAttendancePage.css';
 export default function MyAttendancePage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchAttendance = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await attendanceService.getMyAttendance();
+      setData(result);
+    } catch (err) {
+      console.error('Failed to load attendance:', err);
+      setError(err.message || 'Failed to load attendance records. Please check your connection.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchAttendance() {
-      try {
-        const result = await attendanceService.getMyAttendance();
-        setData(result);
-      } catch (err) {
-        console.error('Failed to load attendance:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchAttendance();
   }, []);
 
   if (loading) return <Loading fullPage message="Loading attendance records..." />;
 
-  if (!data || data.records.length === 0) {
+  if (error) {
+    return (
+      <div className="container attendance-page">
+        <div className="page-header">
+          <span className="eyebrow-label">Member Records</span>
+          <h1>My Attendance</h1>
+          <p>Track your attendance history and active participation across club sessions.</p>
+        </div>
+        <EmptyState
+          icon="alert"
+          title="Unable to Load Attendance"
+          message={error}
+        />
+      </div>
+    );
+  }
+
+  if (!data || !data.records || data.records.length === 0) {
     return (
       <div className="container attendance-page">
         <div className="page-header">

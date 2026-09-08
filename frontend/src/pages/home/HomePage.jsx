@@ -19,24 +19,39 @@ export default function HomePage() {
   const [past, setPast] = useState([]);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [upcomingRes, pastRes, membersRes] = await Promise.allSettled([
+        activityService.getUpcoming(),
+        activityService.getPast(),
+        memberService.getAll(),
+      ]);
+
+      if (upcomingRes.status === 'fulfilled') setUpcoming(upcomingRes.value);
+      else console.error('Failed to load upcoming activities:', upcomingRes.reason);
+
+      if (pastRes.status === 'fulfilled') setPast(pastRes.value);
+      else console.error('Failed to load past activities:', pastRes.reason);
+
+      if (membersRes.status === 'fulfilled') setMembers(membersRes.value);
+      else console.error('Failed to load members:', membersRes.reason);
+
+      if (upcomingRes.status === 'rejected' && pastRes.status === 'rejected' && membersRes.status === 'rejected') {
+        setError('Failed to connect to platform services. Please check your connection and try again.');
+      }
+    } catch (err) {
+      console.error('Failed to load home data:', err);
+      setError(err.message || 'Failed to load home data.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const [upcomingRes, pastRes, membersRes] = await Promise.all([
-          activityService.getUpcoming(),
-          activityService.getPast(),
-          memberService.getAll(),
-        ]);
-        setUpcoming(upcomingRes);
-        setPast(pastRes);
-        setMembers(membersRes);
-      } catch (err) {
-        console.error('Failed to load home data:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchData();
   }, []);
 

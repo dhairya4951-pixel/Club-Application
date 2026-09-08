@@ -9,20 +9,25 @@ import './ActivitiesPage.css';
 export default function ActivitiesPage() {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
 
-  useEffect(() => {
-    async function fetchActivities() {
-      try {
-        const data = await activityService.getAll();
-        setActivities(data);
-      } catch (err) {
-        console.error('Failed to load activities:', err);
-      } finally {
-        setLoading(false);
-      }
+  const fetchActivities = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await activityService.getAll();
+      setActivities(data);
+    } catch (err) {
+      console.error('Failed to load activities:', err);
+      setError(err.message || 'Failed to load activities. Please check your connection.');
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
     fetchActivities();
   }, []);
 
@@ -79,7 +84,13 @@ export default function ActivitiesPage() {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
+      {error ? (
+        <EmptyState
+          icon="alert"
+          title="Unable to Load Activities"
+          message={error}
+        />
+      ) : filtered.length === 0 ? (
         <EmptyState
           icon="calendar"
           title="No activities found"
